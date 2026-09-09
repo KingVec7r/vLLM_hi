@@ -203,7 +203,7 @@ A full list of performance-tuning knobs and probe switches is documented in [`fe
 
 ## Benchmark Results
 
-Hardware: **3 × NVIDIA RTX PRO 6000 Blackwell 96 GB**, `gpu_memory_utilization = 0.95`.
+Hardware: **3 × NVIDIA RTX PRO 6000 Blackwell**, `gpu_memory_utilization = 0.95`.
 Model: [Qwen3-8B](https://www.modelscope.cn/models/Qwen/Qwen3-8B).
 Workload data: `test/data/LongWriter/1024.json`, a subset of [LongWriter-6k](https://www.modelscope.cn/datasets/AI-ModelScope/LongWriter-6k) (the 1024 prompts that produce the longest Qwen3-8B outputs).
 `concurrency` = `max_seq_num` = 256, `migration_delay_s` = 10.

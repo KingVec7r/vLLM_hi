@@ -203,7 +203,7 @@ curl http://127.0.0.1:8002/vllm_hi/migration/<migration_id>/status
 
 ## 测试结果
 
-硬件：**3 × NVIDIA RTX PRO 6000 Blackwell 96 GB**，`gpu_memory_utilization = 0.95`。
+硬件：**3 × NVIDIA RTX PRO 6000 Blackwell**，`gpu_memory_utilization = 0.95`。
 模型：[Qwen3-8B](https://www.modelscope.cn/models/Qwen/Qwen3-8B)。
 负载数据：`test/data/LongWriter/1024.json`，是 [LongWriter-6k](https://www.modelscope.cn/datasets/AI-ModelScope/LongWriter-6k) 的子集（实测 Qwen3-8B 输出最长的 1024 条）。
 `concurrency` = `max_seq_num` = 256，`migration_delay_s` = 10。
@@ -224,7 +224,7 @@ curl http://127.0.0.1:8002/vllm_hi/migration/<migration_id>/status
 | a1_btp | 11966 / 26.29 | 2017 / 4.43 | 926 / 2.03 | 512 / 1.12 | 451 / 0.99 | 446 / 0.98 | 481 / 1.06 | 558 / 1.23 | 482 / 1.06 | — |
 | a1_bpp | 10626 / 23.35 | 3863 / 8.49 | 975 / 2.14 | 338 / 0.74 | 337 / 0.74 | 349 / 0.77 | 292 / 0.64 | 335 / 0.74 | 284 / 0.62 | 306 / 0.67 |
 
-![满负载迁移](test/vllm_hi/migration/1024_test_baseline.png)
+![满负载迁移](../test/vllm_hi/migration/1024_test_baseline.png)
 
 图片呈现三条迁移曲线与 **Baseline**（无迁移事件）下客户端感知的 token 输出速率随时刻变化。客户端对迁移无感知：对比 `a1_b1` 与 Baseline，热迁移使任务完成总耗时增加约 **7 秒**。更多迁移事件可视化见 `test/vllm_hi/migration/*.png`。
 
@@ -248,7 +248,7 @@ curl http://127.0.0.1:8002/vllm_hi/migration/<migration_id>/status
 | atp_b1 | 374 / 0.822 | 2 / 0.004 | 1 / 0.002 | 0 / 0.000 |
 | app_b1 | 254 / 0.558 | 1 / 0.002 | 0 / 0.000 | — |
 
-![单条长序列迁移](test/vllm_hi/migration/single_test_baseline.png)
+![单条长序列迁移](../test/vllm_hi/migration/single_test_baseline.png)
 
 图片呈现 `a1_b1`、`a1_btp`、`a1_bpp` 三条曲线与 Baseline 的客户端感知 token 速率。客户端对迁移停机无感知：对比 Baseline，热迁移没有引入额外推理耗时（单条序列直接在 B 上继续解码）。
 
