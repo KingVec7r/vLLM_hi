@@ -1,0 +1,34 @@
+{
+  "model": "/data/jr/weights/Qwen3-8B",
+  "served_model_name": "vllm_hi/Qwen3-8B",
+  "host_port": 8002,
+  "data_file": "test/data/LongWriter/1024.json",
+  "max_tokens": 1024,
+  "concurrency": 256,
+  "migration_delay_s": 10,
+  "a": {
+    "gpus": [
+      3
+    ],
+    "tensor_parallel_size": 1,
+    "pipeline_parallel_size": 1,
+    "gpu_memory_utilization": 0.95
+  },
+  "b_test_1": {
+    "gpus": [
+      2
+    ],
+    "tensor_parallel_size": 1,
+    "pipeline_parallel_size": 1,
+    "gpu_memory_utilization": 0.95
+  },
+  "b_test_2": {
+    "gpus": [
+      2,
+      3
+    ],
+    "tensor_parallel_size": 1,
+    "pipeline_parallel_size": 2,
+    "gpu_memory_utilization": 0.95
+  }
+}

@@ -1,0 +1,1333 @@
+{
+  "timestamp": "2026-09-09 00:17:16",
+  "backend": "ipc",
+  "test_num": 1,
+  "config": {
+    "url": "http://127.0.0.1:8002",
+    "model": "vllm_hi/Qwen3-8B",
+    "data_file": "test/data/LongWriter/1024.json",
+    "max_tokens": 1024,
+    "concurrency": 256,
+    "num_requests": 1024,
+    "num_failures": 0,
+    "migration_delay_s": 10.0,
+    "a_topology": {
+      "gpus": [
+        3
+      ],
+      "tensor_parallel_size": 1,
+      "pipeline_parallel_size": 1,
+      "gpu_memory_utilization": 0.95
+    },
+    "b_topology": {
+      "gpus": [
+        2
+      ],
+      "tensor_parallel_size": 1,
+      "pipeline_parallel_size": 1,
+      "gpu_memory_utilization": 0.95
+    }
+  },
+  "metrics": {
+    "total_time_s": 210.216,
+    "total_output_tokens": 1045534,
+    "avg_output_token_speed_token_per_s": 4973.63,
+    "peak_output_token_speed_token_per_s": 7829.44,
+    "instantaneous_output_token_speed_token_per_s": [
+      {
+        "second": 1.0,
+        "speed_token_per_s": 138.96
+      },
+      {
+        "second": 2.0,
+        "speed_token_per_s": 230.97
+      },
+      {
+        "second": 3.001,
+        "speed_token_per_s": 266.97
+      },
+      {
+        "second": 4.005,
+        "speed_token_per_s": 481.82
+      },
+      {
+        "second": 5.008,
+        "speed_token_per_s": 2079.97
+      },
+      {
+        "second": 6.009,
+        "speed_token_per_s": 3642.42
+      },
+      {
+        "second": 7.009,
+        "speed_token_per_s": 5113.6
+      },
+      {
+        "second": 8.011,
+        "speed_token_per_s": 6581.39
+      },
+      {
+        "second": 9.014,
+        "speed_token_per_s": 7829.44
+      },
+      {
+        "second": 10.024,
+        "speed_token_per_s": 7590.57
+      },
+      {
+        "second": 11.027,
+        "speed_token_per_s": 7440.57
+      },
+      {
+        "second": 12.029,
+        "speed_token_per_s": 7290.6
+      },
+      {
+        "second": 13.034,
+        "speed_token_per_s": 7112.18
+      },
+      {
+        "second": 14.039,
+        "speed_token_per_s": 6973.75
+      },
+      {
+        "second": 15.04,
+        "speed_token_per_s": 6854.49
+      },
+      {
+        "second": 16.043,
+        "speed_token_per_s": 6729.65
+      },
+      {
+        "second": 17.057,
+        "speed_token_per_s": 6600.14
+      },
+      {
+        "second": 18.061,
+        "speed_token_per_s": 6534.0
+      },
+      {
+        "second": 19.061,
+        "speed_token_per_s": 6420.66
+      },
+      {
+        "second": 20.065,
+        "speed_token_per_s": 6295.05
+      },
+      {
+        "second": 21.075,
+        "speed_token_per_s": 6211.09
+      },
+      {
+        "second": 22.076,
+        "speed_token_per_s": 6132.98
+      },
+      {
+        "second": 23.077,
+        "speed_token_per_s": 6020.33
+      },
+      {
+        "second": 24.077,
+        "speed_token_per_s": 5965.54
+      },
+      {
+        "second": 25.077,
+        "speed_token_per_s": 5883.48
+      },
+      {
+        "second": 26.078,
+        "speed_token_per_s": 5777.56
+      },
+      {
+        "second": 27.084,
+        "speed_token_per_s": 5713.64
+      },
+      {
+        "second": 28.09,
+        "speed_token_per_s": 5634.18
+      },
+      {
+        "second": 29.1,
+        "speed_token_per_s": 5544.41
+      },
+      {
+        "second": 30.1,
+        "speed_token_per_s": 5491.22
+      },
+      {
+        "second": 31.1,
+        "speed_token_per_s": 5439.36
+      },
+      {
+        "second": 32.1,
+        "speed_token_per_s": 5364.79
+      },
+      {
+        "second": 33.104,
+        "speed_token_per_s": 5316.28
+      },
+      {
+        "second": 34.105,
+        "speed_token_per_s": 5255.27
+      },
+      {
+        "second": 35.108,
+        "speed_token_per_s": 5204.85
+      },
+      {
+        "second": 36.109,
+        "speed_token_per_s": 5146.38
+      },
+      {
+        "second": 37.113,
+        "speed_token_per_s": 5118.82
+      },
+      {
+        "second": 38.114,
+        "speed_token_per_s": 5045.76
+      },
+      {
+        "second": 39.119,
+        "speed_token_per_s": 5014.35
+      },
+      {
+        "second": 40.124,
+        "speed_token_per_s": 4962.15
+      },
+      {
+        "second": 41.126,
+        "speed_token_per_s": 4834.36
+      },
+      {
+        "second": 42.127,
+        "speed_token_per_s": 4792.03
+      },
+      {
+        "second": 43.127,
+        "speed_token_per_s": 4738.76
+      },
+      {
+        "second": 44.128,
+        "speed_token_per_s": 4713.25
+      },
+      {
+        "second": 45.128,
+        "speed_token_per_s": 4663.19
+      },
+      {
+        "second": 46.128,
+        "speed_token_per_s": 4699.53
+      },
+      {
+        "second": 47.13,
+        "speed_token_per_s": 4647.03
+      },
+      {
+        "second": 48.131,
+        "speed_token_per_s": 4637.63
+      },
+      {
+        "second": 49.131,
+        "speed_token_per_s": 3955.09
+      },
+      {
+        "second": 50.131,
+        "speed_token_per_s": 3122.03
+      },
+      {
+        "second": 51.131,
+        "speed_token_per_s": 2318.83
+      },
+      {
+        "second": 52.131,
+        "speed_token_per_s": 1517.07
+      },
+      {
+        "second": 53.131,
+        "speed_token_per_s": 737.36
+      },
+      {
+        "second": 54.133,
+        "speed_token_per_s": 1195.03
+      },
+      {
+        "second": 55.137,
+        "speed_token_per_s": 2428.28
+      },
+      {
+        "second": 56.142,
+        "speed_token_per_s": 4298.48
+      },
+      {
+        "second": 57.146,
+        "speed_token_per_s": 5499.89
+      },
+      {
+        "second": 58.148,
+        "speed_token_per_s": 6642.85
+      },
+      {
+        "second": 59.148,
+        "speed_token_per_s": 7275.55
+      },
+      {
+        "second": 60.148,
+        "speed_token_per_s": 7241.38
+      },
+      {
+        "second": 61.158,
+        "speed_token_per_s": 6061.93
+      },
+      {
+        "second": 62.163,
+        "speed_token_per_s": 5769.03
+      },
+      {
+        "second": 63.163,
+        "speed_token_per_s": 4484.12
+      },
+      {
+        "second": 64.163,
+        "speed_token_per_s": 4562.55
+      },
+      {
+        "second": 65.163,
+        "speed_token_per_s": 4558.98
+      },
+      {
+        "second": 66.164,
+        "speed_token_per_s": 4987.85
+      },
+      {
+        "second": 67.164,
+        "speed_token_per_s": 5191.8
+      },
+      {
+        "second": 68.164,
+        "speed_token_per_s": 6419.0
+      },
+      {
+        "second": 69.168,
+        "speed_token_per_s": 6129.03
+      },
+      {
+        "second": 70.168,
+        "speed_token_per_s": 6033.77
+      },
+      {
+        "second": 71.176,
+        "speed_token_per_s": 5966.19
+      },
+      {
+        "second": 72.177,
+        "speed_token_per_s": 5874.25
+      },
+      {
+        "second": 73.177,
+        "speed_token_per_s": 5771.84
+      },
+      {
+        "second": 74.178,
+        "speed_token_per_s": 5723.64
+      },
+      {
+        "second": 75.181,
+        "speed_token_per_s": 5627.59
+      },
+      {
+        "second": 76.181,
+        "speed_token_per_s": 5577.55
+      },
+      {
+        "second": 77.182,
+        "speed_token_per_s": 5517.06
+      },
+      {
+        "second": 78.182,
+        "speed_token_per_s": 5464.76
+      },
+      {
+        "second": 79.186,
+        "speed_token_per_s": 5408.18
+      },
+      {
+        "second": 80.189,
+        "speed_token_per_s": 5345.9
+      },
+      {
+        "second": 81.189,
+        "speed_token_per_s": 5255.63
+      },
+      {
+        "second": 82.189,
+        "speed_token_per_s": 5204.96
+      },
+      {
+        "second": 83.19,
+        "speed_token_per_s": 5152.73
+      },
+      {
+        "second": 84.202,
+        "speed_token_per_s": 5096.18
+      },
+      {
+        "second": 85.202,
+        "speed_token_per_s": 5047.27
+      },
+      {
+        "second": 86.202,
+        "speed_token_per_s": 5000.35
+      },
+      {
+        "second": 87.204,
+        "speed_token_per_s": 4941.85
+      },
+      {
+        "second": 88.206,
+        "speed_token_per_s": 4892.84
+      },
+      {
+        "second": 89.206,
+        "speed_token_per_s": 4851.62
+      },
+      {
+        "second": 90.211,
+        "speed_token_per_s": 4809.61
+      },
+      {
+        "second": 91.215,
+        "speed_token_per_s": 4781.93
+      },
+      {
+        "second": 92.215,
+        "speed_token_per_s": 4736.33
+      },
+      {
+        "second": 93.215,
+        "speed_token_per_s": 4685.09
+      },
+      {
+        "second": 94.219,
+        "speed_token_per_s": 4525.11
+      },
+      {
+        "second": 95.221,
+        "speed_token_per_s": 4470.83
+      },
+      {
+        "second": 96.221,
+        "speed_token_per_s": 4438.52
+      },
+      {
+        "second": 97.229,
+        "speed_token_per_s": 4394.56
+      },
+      {
+        "second": 98.229,
+        "speed_token_per_s": 4382.89
+      },
+      {
+        "second": 99.229,
+        "speed_token_per_s": 4446.05
+      },
+      {
+        "second": 100.229,
+        "speed_token_per_s": 4434.21
+      },
+      {
+        "second": 101.231,
+        "speed_token_per_s": 4396.32
+      },
+      {
+        "second": 102.24,
+        "speed_token_per_s": 4263.64
+      },
+      {
+        "second": 103.241,
+        "speed_token_per_s": 3524.66
+      },
+      {
+        "second": 104.241,
+        "speed_token_per_s": 2685.35
+      },
+      {
+        "second": 105.241,
+        "speed_token_per_s": 1818.78
+      },
+      {
+        "second": 106.241,
+        "speed_token_per_s": 1506.38
+      },
+      {
+        "second": 107.241,
+        "speed_token_per_s": 937.85
+      },
+      {
+        "second": 108.242,
+        "speed_token_per_s": 997.77
+      },
+      {
+        "second": 109.242,
+        "speed_token_per_s": 1017.6
+      },
+      {
+        "second": 110.242,
+        "speed_token_per_s": 1097.69
+      },
+      {
+        "second": 111.242,
+        "speed_token_per_s": 613.62
+      },
+      {
+        "second": 112.242,
+        "speed_token_per_s": 1302.55
+      },
+      {
+        "second": 113.246,
+        "speed_token_per_s": 2555.99
+      },
+      {
+        "second": 114.248,
+        "speed_token_per_s": 3992.9
+      },
+      {
+        "second": 115.25,
+        "speed_token_per_s": 5343.35
+      },
+      {
+        "second": 116.251,
+        "speed_token_per_s": 6646.24
+      },
+      {
+        "second": 117.251,
+        "speed_token_per_s": 7160.97
+      },
+      {
+        "second": 118.252,
+        "speed_token_per_s": 7060.31
+      },
+      {
+        "second": 119.252,
+        "speed_token_per_s": 6893.29
+      },
+      {
+        "second": 120.254,
+        "speed_token_per_s": 6758.34
+      },
+      {
+        "second": 121.254,
+        "speed_token_per_s": 6685.57
+      },
+      {
+        "second": 122.255,
+        "speed_token_per_s": 6542.07
+      },
+      {
+        "second": 123.255,
+        "speed_token_per_s": 6425.72
+      },
+      {
+        "second": 124.261,
+        "speed_token_per_s": 6340.83
+      },
+      {
+        "second": 125.263,
+        "speed_token_per_s": 6233.72
+      },
+      {
+        "second": 126.27,
+        "speed_token_per_s": 6116.91
+      },
+      {
+        "second": 127.279,
+        "speed_token_per_s": 6055.49
+      },
+      {
+        "second": 128.282,
+        "speed_token_per_s": 5943.25
+      },
+      {
+        "second": 129.284,
+        "speed_token_per_s": 5867.87
+      },
+      {
+        "second": 130.295,
+        "speed_token_per_s": 5833.57
+      },
+      {
+        "second": 131.3,
+        "speed_token_per_s": 5715.96
+      },
+      {
+        "second": 132.3,
+        "speed_token_per_s": 5661.9
+      },
+      {
+        "second": 133.3,
+        "speed_token_per_s": 5589.89
+      },
+      {
+        "second": 134.3,
+        "speed_token_per_s": 5507.4
+      },
+      {
+        "second": 135.303,
+        "speed_token_per_s": 5432.05
+      },
+      {
+        "second": 136.304,
+        "speed_token_per_s": 5419.84
+      },
+      {
+        "second": 137.306,
+        "speed_token_per_s": 5364.15
+      },
+      {
+        "second": 138.307,
+        "speed_token_per_s": 4851.89
+      },
+      {
+        "second": 139.314,
+        "speed_token_per_s": 4828.77
+      },
+      {
+        "second": 140.318,
+        "speed_token_per_s": 4781.89
+      },
+      {
+        "second": 141.318,
+        "speed_token_per_s": 4684.29
+      },
+      {
+        "second": 142.318,
+        "speed_token_per_s": 4592.83
+      },
+      {
+        "second": 143.32,
+        "speed_token_per_s": 5043.99
+      },
+      {
+        "second": 144.323,
+        "speed_token_per_s": 4965.1
+      },
+      {
+        "second": 145.327,
+        "speed_token_per_s": 4939.6
+      },
+      {
+        "second": 146.327,
+        "speed_token_per_s": 4911.11
+      },
+      {
+        "second": 147.348,
+        "speed_token_per_s": 4928.45
+      },
+      {
+        "second": 148.349,
+        "speed_token_per_s": 4865.25
+      },
+      {
+        "second": 149.355,
+        "speed_token_per_s": 4825.04
+      },
+      {
+        "second": 150.355,
+        "speed_token_per_s": 4765.91
+      },
+      {
+        "second": 151.362,
+        "speed_token_per_s": 4755.1
+      },
+      {
+        "second": 152.362,
+        "speed_token_per_s": 4582.96
+      },
+      {
+        "second": 153.363,
+        "speed_token_per_s": 4346.71
+      },
+      {
+        "second": 154.368,
+        "speed_token_per_s": 4150.8
+      },
+      {
+        "second": 155.372,
+        "speed_token_per_s": 4037.98
+      },
+      {
+        "second": 156.374,
+        "speed_token_per_s": 3825.91
+      },
+      {
+        "second": 157.375,
+        "speed_token_per_s": 3819.88
+      },
+      {
+        "second": 158.375,
+        "speed_token_per_s": 4021.52
+      },
+      {
+        "second": 159.375,
+        "speed_token_per_s": 4151.23
+      },
+      {
+        "second": 160.375,
+        "speed_token_per_s": 3888.82
+      },
+      {
+        "second": 161.375,
+        "speed_token_per_s": 3296.03
+      },
+      {
+        "second": 162.376,
+        "speed_token_per_s": 2543.83
+      },
+      {
+        "second": 163.376,
+        "speed_token_per_s": 1733.0
+      },
+      {
+        "second": 164.376,
+        "speed_token_per_s": 1780.91
+      },
+      {
+        "second": 165.376,
+        "speed_token_per_s": 2701.84
+      },
+      {
+        "second": 166.383,
+        "speed_token_per_s": 4054.92
+      },
+      {
+        "second": 167.384,
+        "speed_token_per_s": 5433.11
+      },
+      {
+        "second": 168.384,
+        "speed_token_per_s": 6711.23
+      },
+      {
+        "second": 169.389,
+        "speed_token_per_s": 7199.28
+      },
+      {
+        "second": 170.39,
+        "speed_token_per_s": 7041.77
+      },
+      {
+        "second": 171.39,
+        "speed_token_per_s": 6952.57
+      },
+      {
+        "second": 172.391,
+        "speed_token_per_s": 6796.16
+      },
+      {
+        "second": 173.392,
+        "speed_token_per_s": 6699.24
+      },
+      {
+        "second": 174.398,
+        "speed_token_per_s": 6542.93
+      },
+      {
+        "second": 175.398,
+        "speed_token_per_s": 6480.26
+      },
+      {
+        "second": 176.4,
+        "speed_token_per_s": 6336.38
+      },
+      {
+        "second": 177.4,
+        "speed_token_per_s": 6237.79
+      },
+      {
+        "second": 178.401,
+        "speed_token_per_s": 6162.48
+      },
+      {
+        "second": 179.401,
+        "speed_token_per_s": 6082.02
+      },
+      {
+        "second": 180.401,
+        "speed_token_per_s": 5985.53
+      },
+      {
+        "second": 181.401,
+        "speed_token_per_s": 5874.38
+      },
+      {
+        "second": 182.41,
+        "speed_token_per_s": 5827.42
+      },
+      {
+        "second": 183.417,
+        "speed_token_per_s": 5710.61
+      },
+      {
+        "second": 184.417,
+        "speed_token_per_s": 5627.8
+      },
+      {
+        "second": 185.418,
+        "speed_token_per_s": 5572.12
+      },
+      {
+        "second": 186.418,
+        "speed_token_per_s": 5511.14
+      },
+      {
+        "second": 187.418,
+        "speed_token_per_s": 5439.57
+      },
+      {
+        "second": 188.418,
+        "speed_token_per_s": 5398.47
+      },
+      {
+        "second": 189.418,
+        "speed_token_per_s": 5328.86
+      },
+      {
+        "second": 190.419,
+        "speed_token_per_s": 5239.58
+      },
+      {
+        "second": 191.42,
+        "speed_token_per_s": 5206.57
+      },
+      {
+        "second": 192.42,
+        "speed_token_per_s": 5128.35
+      },
+      {
+        "second": 193.42,
+        "speed_token_per_s": 5094.34
+      },
+      {
+        "second": 194.42,
+        "speed_token_per_s": 5011.12
+      },
+      {
+        "second": 195.421,
+        "speed_token_per_s": 5008.08
+      },
+      {
+        "second": 196.421,
+        "speed_token_per_s": 4907.1
+      },
+      {
+        "second": 197.421,
+        "speed_token_per_s": 4901.05
+      },
+      {
+        "second": 198.421,
+        "speed_token_per_s": 4803.23
+      },
+      {
+        "second": 199.423,
+        "speed_token_per_s": 4800.13
+      },
+      {
+        "second": 200.423,
+        "speed_token_per_s": 4705.29
+      },
+      {
+        "second": 201.426,
+        "speed_token_per_s": 4688.44
+      },
+      {
+        "second": 202.434,
+        "speed_token_per_s": 4644.69
+      },
+      {
+        "second": 203.436,
+        "speed_token_per_s": 4599.22
+      },
+      {
+        "second": 204.436,
+        "speed_token_per_s": 4578.5
+      },
+      {
+        "second": 205.437,
+        "speed_token_per_s": 4515.32
+      },
+      {
+        "second": 206.437,
+        "speed_token_per_s": 4506.42
+      },
+      {
+        "second": 207.44,
+        "speed_token_per_s": 4416.8
+      },
+      {
+        "second": 208.442,
+        "speed_token_per_s": 4381.78
+      },
+      {
+        "second": 209.442,
+        "speed_token_per_s": 4324.99
+      }
+    ],
+    "last_token_activity_second": 210.209
+  },
+  "migration_events": [
+    {
+      "event": "migration_trigger",
+      "second": 10.143,
+      "wall": "00:13:55",
+      "is_key_event": true
+    },
+    {
+      "event": "b_instantiate",
+      "second": 10.171,
+      "wall": "00:13:57",
+      "is_key_event": true
+    },
+    {
+      "event": "b_instantiate_done",
+      "second": 51.861,
+      "wall": "00:14:38",
+      "is_key_event": true
+    },
+    {
+      "event": "full_transfer",
+      "second": 51.861,
+      "wall": "00:14:38",
+      "is_key_event": false
+    },
+    {
+      "event": "full_transfer_done",
+      "second": 53.596,
+      "wall": "00:14:39",
+      "is_key_event": true,
+      "data_size_bytes": 11761090560
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 53.596,
+      "wall": "00:14:39",
+      "is_key_event": false,
+      "round_idx": 1
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 54.595,
+      "wall": "00:14:40",
+      "is_key_event": false,
+      "round_idx": 1,
+      "data_size_bytes": 4074504192
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 54.595,
+      "wall": "00:14:40",
+      "is_key_event": false,
+      "round_idx": 2
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 56.119,
+      "wall": "00:14:42",
+      "is_key_event": false,
+      "round_idx": 2,
+      "data_size_bytes": 1082916864
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 56.119,
+      "wall": "00:14:42",
+      "is_key_event": false,
+      "round_idx": 3
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 57.129,
+      "wall": "00:14:43",
+      "is_key_event": false,
+      "round_idx": 3,
+      "data_size_bytes": 1630273536
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 57.129,
+      "wall": "00:14:43",
+      "is_key_event": false,
+      "round_idx": 4
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 58.024,
+      "wall": "00:14:44",
+      "is_key_event": false,
+      "round_idx": 4,
+      "data_size_bytes": 964952064
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 58.024,
+      "wall": "00:14:44",
+      "is_key_event": false,
+      "round_idx": 5
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 59.051,
+      "wall": "00:14:45",
+      "is_key_event": false,
+      "round_idx": 5,
+      "data_size_bytes": 880017408
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 59.051,
+      "wall": "00:14:45",
+      "is_key_event": false,
+      "round_idx": 6
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 60.178,
+      "wall": "00:14:46",
+      "is_key_event": false,
+      "round_idx": 6,
+      "data_size_bytes": 1019215872
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 60.178,
+      "wall": "00:14:46",
+      "is_key_event": false,
+      "round_idx": 7
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 61.402,
+      "wall": "00:14:47",
+      "is_key_event": false,
+      "round_idx": 7,
+      "data_size_bytes": 1094713344
+    },
+    {
+      "event": "pause_a",
+      "second": 61.402,
+      "wall": "00:14:47",
+      "is_key_event": false
+    },
+    {
+      "event": "pause_a_done",
+      "second": 61.484,
+      "wall": "00:14:47",
+      "is_key_event": true
+    },
+    {
+      "event": "final_incremental",
+      "second": 61.484,
+      "wall": "00:14:47",
+      "is_key_event": false,
+      "round_idx": 8
+    },
+    {
+      "event": "final_incremental_done",
+      "second": 62.417,
+      "wall": "00:14:48",
+      "is_key_event": false,
+      "round_idx": 8,
+      "data_size_bytes": 1179648000
+    },
+    {
+      "event": "switch_service",
+      "second": 62.417,
+      "wall": "00:14:48",
+      "is_key_event": false
+    },
+    {
+      "event": "switch_service_done",
+      "second": 62.631,
+      "wall": "00:14:48",
+      "is_key_event": true
+    },
+    {
+      "event": "handle_source",
+      "second": 62.636,
+      "wall": "00:14:48",
+      "is_key_event": false
+    },
+    {
+      "event": "done",
+      "second": 64.14,
+      "wall": "00:14:50",
+      "is_key_event": false
+    },
+    {
+      "event": "migration_success",
+      "second": 65.079,
+      "wall": "00:14:50",
+      "is_key_event": true
+    }
+  ],
+  "key_migration_events": [
+    {
+      "event": "migration_trigger",
+      "second": 10.143,
+      "wall": "00:13:55"
+    },
+    {
+      "event": "b_instantiate",
+      "second": 10.171,
+      "wall": "00:13:57"
+    },
+    {
+      "event": "b_instantiate_done",
+      "second": 51.861,
+      "wall": "00:14:38"
+    },
+    {
+      "event": "full_transfer_done",
+      "second": 53.596,
+      "wall": "00:14:39"
+    },
+    {
+      "event": "pause_a_done",
+      "second": 61.484,
+      "wall": "00:14:47"
+    },
+    {
+      "event": "switch_service_done",
+      "second": 62.631,
+      "wall": "00:14:48"
+    },
+    {
+      "event": "migration_success",
+      "second": 65.079,
+      "wall": "00:14:50"
+    }
+  ],
+  "migration": {
+    "success": true,
+    "migration_id": "mig-bb1dbb55",
+    "duration": 53.969092037994415,
+    "result": {
+      "migration_id": "mig-bb1dbb55",
+      "status": "success",
+      "start_time": "2026-09-08T16:13:55.973905+00:00",
+      "end_time": "2026-09-08T16:14:49.945113+00:00",
+      "duration": 53.969092037994415,
+      "new_active_instance": {
+        "vllm_hi_id": "inst-6c7fe899",
+        "ip": "127.0.0.1",
+        "port": 8001,
+        "instance_type": "A",
+        "served_model_name": "vllm_hi/Qwen3-8B",
+        "inference_params": {},
+        "status": "active",
+        "registered_at": 1788883987.6038578,
+        "topology": {
+          "tensor_parallel_size": 1,
+          "pipeline_parallel_size": 1,
+          "gpu_memory_utilization": 0.95,
+          "visible_gpu_ids": [
+            2
+          ]
+        },
+        "data_port": 9001
+      },
+      "error": null,
+      "current_step": "done",
+      "step_history": [
+        {
+          "step": "b_instantiate",
+          "timestamp": 1788884035.9763968
+        },
+        {
+          "step": "b_instantiate_done",
+          "timestamp": 1788884077.6658337
+        },
+        {
+          "step": "full_transfer",
+          "timestamp": 1788884077.6658468
+        },
+        {
+          "step": "full_transfer_done",
+          "timestamp": 1788884079.4010344,
+          "data_size_bytes": 11761090560
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884079.4010408,
+          "round_idx": 1
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884080.4002457,
+          "round_idx": 1,
+          "data_size_bytes": 4074504192,
+          "block_count": 1727
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884080.4002554,
+          "round_idx": 2
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884081.923788,
+          "round_idx": 2,
+          "data_size_bytes": 1082916864,
+          "block_count": 459
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884081.9237964,
+          "round_idx": 3
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884082.9342484,
+          "round_idx": 3,
+          "data_size_bytes": 1630273536,
+          "block_count": 691
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884082.9342546,
+          "round_idx": 4
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884083.8297062,
+          "round_idx": 4,
+          "data_size_bytes": 964952064,
+          "block_count": 409
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884083.8297114,
+          "round_idx": 5
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884084.8558607,
+          "round_idx": 5,
+          "data_size_bytes": 880017408,
+          "block_count": 373
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884084.8558671,
+          "round_idx": 6
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884085.9828424,
+          "round_idx": 6,
+          "data_size_bytes": 1019215872,
+          "block_count": 432
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788884085.982848,
+          "round_idx": 7
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788884087.2074409,
+          "round_idx": 7,
+          "data_size_bytes": 1094713344,
+          "block_count": 464
+        },
+        {
+          "step": "pause_a",
+          "timestamp": 1788884087.2075233
+        },
+        {
+          "step": "pause_a_done",
+          "timestamp": 1788884087.2894819
+        },
+        {
+          "step": "final_incremental",
+          "timestamp": 1788884087.2894855,
+          "round_idx": 8
+        },
+        {
+          "step": "final_incremental_done",
+          "timestamp": 1788884088.2224708,
+          "round_idx": 8,
+          "data_size_bytes": 1179648000,
+          "block_count": 500
+        },
+        {
+          "step": "switch_service",
+          "timestamp": 1788884088.222475
+        },
+        {
+          "step": "switch_service_done",
+          "timestamp": 1788884088.436368
+        },
+        {
+          "step": "handle_source",
+          "timestamp": 1788884088.441259
+        },
+        {
+          "step": "done",
+          "timestamp": 1788884089.9450963
+        }
+      ]
+    }
+  },
+  "transfer_sizes": {
+    "full_transfer_bytes": 11761090560,
+    "incremental_transfers": [
+      {
+        "round": 1,
+        "data_size_bytes": 4074504192,
+        "block_count": 1727
+      },
+      {
+        "round": 2,
+        "data_size_bytes": 1082916864,
+        "block_count": 459
+      },
+      {
+        "round": 3,
+        "data_size_bytes": 1630273536,
+        "block_count": 691
+      },
+      {
+        "round": 4,
+        "data_size_bytes": 964952064,
+        "block_count": 409
+      },
+      {
+        "round": 5,
+        "data_size_bytes": 880017408,
+        "block_count": 373
+      },
+      {
+        "round": 6,
+        "data_size_bytes": 1019215872,
+        "block_count": 432
+      },
+      {
+        "round": 7,
+        "data_size_bytes": 1094713344,
+        "block_count": 464
+      },
+      {
+        "round": 8,
+        "data_size_bytes": 1179648000,
+        "block_count": 500
+      }
+    ],
+    "bytes_per_block": 2359296,
+    "full_transfer_blocks": 4985
+  },
+  "assertions": {
+    "migration_trigger_within_load": true,
+    "b_instantiate_done_within_load": true,
+    "switch_service_done_within_load": true
+  },
+  "failures": []
+}

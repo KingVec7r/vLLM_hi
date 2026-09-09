@@ -1,0 +1,703 @@
+{
+  "timestamp": "2026-09-09 01:09:27",
+  "backend": "ipc",
+  "test_num": 2,
+  "config": {
+    "url": "http://127.0.0.1:8002",
+    "model": "vllm_hi/Qwen3-8B",
+    "data_file": "test/data/LongWriter/1.json",
+    "max_tokens": 8192,
+    "concurrency": 1,
+    "num_requests": 1,
+    "num_failures": 0,
+    "migration_delay_s": 10,
+    "a_topology": {
+      "gpus": [
+        0
+      ],
+      "tensor_parallel_size": 1,
+      "pipeline_parallel_size": 1,
+      "gpu_memory_utilization": 0.95
+    },
+    "b_topology": {
+      "gpus": [
+        2,
+        3
+      ],
+      "tensor_parallel_size": 1,
+      "pipeline_parallel_size": 2,
+      "gpu_memory_utilization": 0.95
+    }
+  },
+  "metrics": {
+    "total_time_s": 99.057,
+    "total_output_tokens": 8170,
+    "avg_output_token_speed_token_per_s": 82.48,
+    "peak_output_token_speed_token_per_s": 86.38,
+    "instantaneous_output_token_speed_token_per_s": [
+      {
+        "second": 1.0,
+        "speed_token_per_s": 76.97
+      },
+      {
+        "second": 2.001,
+        "speed_token_per_s": 81.48
+      },
+      {
+        "second": 3.001,
+        "speed_token_per_s": 82.98
+      },
+      {
+        "second": 4.001,
+        "speed_token_per_s": 83.98
+      },
+      {
+        "second": 5.001,
+        "speed_token_per_s": 84.38
+      },
+      {
+        "second": 6.001,
+        "speed_token_per_s": 86.18
+      },
+      {
+        "second": 7.002,
+        "speed_token_per_s": 86.18
+      },
+      {
+        "second": 8.002,
+        "speed_token_per_s": 86.38
+      },
+      {
+        "second": 9.002,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 10.002,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 11.002,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 12.002,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 13.003,
+        "speed_token_per_s": 85.78
+      },
+      {
+        "second": 14.003,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 15.003,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 16.003,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 17.003,
+        "speed_token_per_s": 85.98
+      },
+      {
+        "second": 18.004,
+        "speed_token_per_s": 85.78
+      },
+      {
+        "second": 19.004,
+        "speed_token_per_s": 85.78
+      },
+      {
+        "second": 20.004,
+        "speed_token_per_s": 85.78
+      },
+      {
+        "second": 21.004,
+        "speed_token_per_s": 85.59
+      },
+      {
+        "second": 22.004,
+        "speed_token_per_s": 85.59
+      },
+      {
+        "second": 23.004,
+        "speed_token_per_s": 85.59
+      },
+      {
+        "second": 24.005,
+        "speed_token_per_s": 84.99
+      },
+      {
+        "second": 25.005,
+        "speed_token_per_s": 84.79
+      },
+      {
+        "second": 26.005,
+        "speed_token_per_s": 84.99
+      },
+      {
+        "second": 27.005,
+        "speed_token_per_s": 84.79
+      },
+      {
+        "second": 28.005,
+        "speed_token_per_s": 84.79
+      },
+      {
+        "second": 29.005,
+        "speed_token_per_s": 85.19
+      },
+      {
+        "second": 30.006,
+        "speed_token_per_s": 85.19
+      },
+      {
+        "second": 31.006,
+        "speed_token_per_s": 84.99
+      },
+      {
+        "second": 32.006,
+        "speed_token_per_s": 84.99
+      },
+      {
+        "second": 33.006,
+        "speed_token_per_s": 84.79
+      },
+      {
+        "second": 34.006,
+        "speed_token_per_s": 84.39
+      },
+      {
+        "second": 35.006,
+        "speed_token_per_s": 84.19
+      },
+      {
+        "second": 36.006,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 37.007,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 38.007,
+        "speed_token_per_s": 83.79
+      },
+      {
+        "second": 39.007,
+        "speed_token_per_s": 83.79
+      },
+      {
+        "second": 40.007,
+        "speed_token_per_s": 83.79
+      },
+      {
+        "second": 41.007,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 42.007,
+        "speed_token_per_s": 83.79
+      },
+      {
+        "second": 43.008,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 44.008,
+        "speed_token_per_s": 84.19
+      },
+      {
+        "second": 45.008,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 46.008,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 47.008,
+        "speed_token_per_s": 83.99
+      },
+      {
+        "second": 48.008,
+        "speed_token_per_s": 83.39
+      },
+      {
+        "second": 49.009,
+        "speed_token_per_s": 80.79
+      },
+      {
+        "second": 50.009,
+        "speed_token_per_s": 80.59
+      },
+      {
+        "second": 51.009,
+        "speed_token_per_s": 79.79
+      },
+      {
+        "second": 52.009,
+        "speed_token_per_s": 79.19
+      },
+      {
+        "second": 53.009,
+        "speed_token_per_s": 79.39
+      },
+      {
+        "second": 54.009,
+        "speed_token_per_s": 81.39
+      },
+      {
+        "second": 55.01,
+        "speed_token_per_s": 81.39
+      },
+      {
+        "second": 56.01,
+        "speed_token_per_s": 81.39
+      },
+      {
+        "second": 57.01,
+        "speed_token_per_s": 81.18
+      },
+      {
+        "second": 58.01,
+        "speed_token_per_s": 81.19
+      },
+      {
+        "second": 59.01,
+        "speed_token_per_s": 81.19
+      },
+      {
+        "second": 60.01,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 61.011,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 62.011,
+        "speed_token_per_s": 81.19
+      },
+      {
+        "second": 63.011,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 64.011,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 65.011,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 66.011,
+        "speed_token_per_s": 80.99
+      },
+      {
+        "second": 67.012,
+        "speed_token_per_s": 80.59
+      },
+      {
+        "second": 68.012,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 69.012,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 70.012,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 71.012,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 72.012,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 73.012,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 74.013,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 75.013,
+        "speed_token_per_s": 80.59
+      },
+      {
+        "second": 76.013,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 77.013,
+        "speed_token_per_s": 80.59
+      },
+      {
+        "second": 78.013,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 79.013,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 80.014,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 81.014,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 82.014,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 83.014,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 84.014,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 85.014,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 86.015,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 87.015,
+        "speed_token_per_s": 80.39
+      },
+      {
+        "second": 88.015,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 89.015,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 90.015,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 91.015,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 92.015,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 93.015,
+        "speed_token_per_s": 80.19
+      },
+      {
+        "second": 94.016,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 95.016,
+        "speed_token_per_s": 79.99
+      },
+      {
+        "second": 96.016,
+        "speed_token_per_s": 79.79
+      },
+      {
+        "second": 97.016,
+        "speed_token_per_s": 79.58
+      },
+      {
+        "second": 98.016,
+        "speed_token_per_s": 79.78
+      },
+      {
+        "second": 99.017,
+        "speed_token_per_s": 79.78
+      }
+    ],
+    "last_token_activity_second": 99.056
+  },
+  "migration_events": [
+    {
+      "event": "migration_trigger",
+      "second": 10.004,
+      "wall": "01:07:57",
+      "is_key_event": true
+    },
+    {
+      "event": "b_instantiate",
+      "second": 10.024,
+      "wall": "01:07:58",
+      "is_key_event": true
+    },
+    {
+      "event": "b_instantiate_done",
+      "second": 47.904,
+      "wall": "01:08:35",
+      "is_key_event": true
+    },
+    {
+      "event": "full_transfer",
+      "second": 47.904,
+      "wall": "01:08:35",
+      "is_key_event": false
+    },
+    {
+      "event": "full_transfer_done",
+      "second": 48.079,
+      "wall": "01:08:35",
+      "is_key_event": true,
+      "data_size_bytes": 658243584
+    },
+    {
+      "event": "incremental_transfer",
+      "second": 48.079,
+      "wall": "01:08:35",
+      "is_key_event": false,
+      "round_idx": 1
+    },
+    {
+      "event": "incremental_transfer_done",
+      "second": 48.175,
+      "wall": "01:08:36",
+      "is_key_event": false,
+      "round_idx": 1,
+      "data_size_bytes": 2359296
+    },
+    {
+      "event": "pause_a",
+      "second": 48.175,
+      "wall": "01:08:36",
+      "is_key_event": false
+    },
+    {
+      "event": "pause_a_done",
+      "second": 48.223,
+      "wall": "01:08:36",
+      "is_key_event": true
+    },
+    {
+      "event": "final_incremental",
+      "second": 48.223,
+      "wall": "01:08:36",
+      "is_key_event": false,
+      "round_idx": 2
+    },
+    {
+      "event": "final_incremental_done",
+      "second": 48.271,
+      "wall": "01:08:36",
+      "is_key_event": false,
+      "round_idx": 2,
+      "data_size_bytes": 0
+    },
+    {
+      "event": "switch_service",
+      "second": 48.271,
+      "wall": "01:08:36",
+      "is_key_event": false
+    },
+    {
+      "event": "switch_service_done",
+      "second": 48.314,
+      "wall": "01:08:36",
+      "is_key_event": true
+    },
+    {
+      "event": "handle_source",
+      "second": 48.314,
+      "wall": "01:08:36",
+      "is_key_event": false
+    },
+    {
+      "event": "done",
+      "second": 49.556,
+      "wall": "01:08:37",
+      "is_key_event": false
+    },
+    {
+      "event": "migration_success",
+      "second": 50.117,
+      "wall": "01:08:37",
+      "is_key_event": true
+    }
+  ],
+  "key_migration_events": [
+    {
+      "event": "migration_trigger",
+      "second": 10.004,
+      "wall": "01:07:57"
+    },
+    {
+      "event": "b_instantiate",
+      "second": 10.024,
+      "wall": "01:07:58"
+    },
+    {
+      "event": "b_instantiate_done",
+      "second": 47.904,
+      "wall": "01:08:35"
+    },
+    {
+      "event": "full_transfer_done",
+      "second": 48.079,
+      "wall": "01:08:35"
+    },
+    {
+      "event": "pause_a_done",
+      "second": 48.223,
+      "wall": "01:08:36"
+    },
+    {
+      "event": "switch_service_done",
+      "second": 48.314,
+      "wall": "01:08:36"
+    },
+    {
+      "event": "migration_success",
+      "second": 50.117,
+      "wall": "01:08:37"
+    }
+  ],
+  "migration": {
+    "success": true,
+    "migration_id": "mig-86ef7df8",
+    "duration": 39.533404728979804,
+    "result": {
+      "migration_id": "mig-86ef7df8",
+      "status": "success",
+      "start_time": "2026-09-08T17:07:57.218325+00:00",
+      "end_time": "2026-09-08T17:08:36.752600+00:00",
+      "duration": 39.533404728979804,
+      "new_active_instance": {
+        "vllm_hi_id": "inst-484e472c",
+        "ip": "127.0.0.1",
+        "port": 8001,
+        "instance_type": "A",
+        "served_model_name": "vllm_hi/Qwen3-8B",
+        "inference_params": {},
+        "status": "active",
+        "registered_at": 1788887234.770241,
+        "topology": {
+          "tensor_parallel_size": 1,
+          "pipeline_parallel_size": 2,
+          "gpu_memory_utilization": 0.95,
+          "visible_gpu_ids": [
+            2,
+            3
+          ]
+        },
+        "data_port": 9001
+      },
+      "error": null,
+      "current_step": "done",
+      "step_history": [
+        {
+          "step": "b_instantiate",
+          "timestamp": 1788887277.219975
+        },
+        {
+          "step": "b_instantiate_done",
+          "timestamp": 1788887315.100952
+        },
+        {
+          "step": "full_transfer",
+          "timestamp": 1788887315.100958
+        },
+        {
+          "step": "full_transfer_done",
+          "timestamp": 1788887315.2759209,
+          "data_size_bytes": 658243584
+        },
+        {
+          "step": "incremental_transfer",
+          "timestamp": 1788887315.2759314,
+          "round_idx": 1
+        },
+        {
+          "step": "incremental_transfer_done",
+          "timestamp": 1788887315.3714838,
+          "round_idx": 1,
+          "data_size_bytes": 2359296,
+          "block_count": 1
+        },
+        {
+          "step": "pause_a",
+          "timestamp": 1788887315.3717473
+        },
+        {
+          "step": "pause_a_done",
+          "timestamp": 1788887315.4196382
+        },
+        {
+          "step": "final_incremental",
+          "timestamp": 1788887315.4196484,
+          "round_idx": 2
+        },
+        {
+          "step": "final_incremental_done",
+          "timestamp": 1788887315.4672523,
+          "round_idx": 2,
+          "data_size_bytes": 0,
+          "block_count": 0
+        },
+        {
+          "step": "switch_service",
+          "timestamp": 1788887315.4672632
+        },
+        {
+          "step": "switch_service_done",
+          "timestamp": 1788887315.5103176
+        },
+        {
+          "step": "handle_source",
+          "timestamp": 1788887315.5105186
+        },
+        {
+          "step": "done",
+          "timestamp": 1788887316.7525792
+        }
+      ]
+    }
+  },
+  "transfer_sizes": {
+    "full_transfer_bytes": 658243584,
+    "incremental_transfers": [
+      {
+        "round": 1,
+        "data_size_bytes": 2359296,
+        "block_count": 1
+      },
+      {
+        "round": 2,
+        "data_size_bytes": 0,
+        "block_count": 0
+      }
+    ],
+    "bytes_per_block": 2359296,
+    "full_transfer_blocks": 279
+  },
+  "assertions": {
+    "migration_trigger_within_load": true,
+    "b_instantiate_done_within_load": true,
+    "switch_service_done_within_load": true
+  },
+  "failures": []
+}
