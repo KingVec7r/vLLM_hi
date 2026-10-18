@@ -131,7 +131,7 @@ serve_http(app, sock=..., ...)                     # uvicorn 起服务 + watchdo
 
 ##### 2.1.6 实例化完成后的关键对象拓扑示意图（跨进程）
 
-![vLLM在线服务拓扑](images\vllm_serving_topo.png)
+![vLLM在线服务拓扑](images/vllm_serving_topo.png)
 
 ---
 
@@ -172,10 +172,10 @@ Worker 结果 → executor → scheduler.update_from_output(...)        # ⑦ �
  → OpenAI serving 层 → 转成 OpenAI 格式 → SSE 流式返回客户端
 ```
 完整调用链示意图：
-![](images\batch-pipeline.svg)
+![](images/batch-pipeline.svg)
 
 单个 step() 的内部：拼批 → 分配 KV block → 一次 forward + 采样 → 更新状态
-![](images\step-loop.svg)
+![](images/step-loop.svg)
 
 ##### 2.2.2 关键环节说明
 
