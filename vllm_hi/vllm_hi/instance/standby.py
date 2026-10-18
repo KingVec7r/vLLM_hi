@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
-"""StandbyInstance: standby startup and on-demand instantiation of the B instance.
+"""B-side standby support: placeholder engine, on-demand instantiation, recovery.
 
-When a B instance starts:
-- Only initialize FastAPI (migration endpoints + HostClient)
-- Do not instantiate the inference backend
-- Register with the Host (type=B)
-- Enter standby and wait for a migration command
+A B instance goes through the native vLLM ``run_server`` pipeline; the only
+vllm_hi-specific differences are injected deeper down (see ``patches``):
 
-After receiving a migration command:
-- Instantiate the vLLM inference backend with the target topology/model
-- Receive state data, perform remapping and recovery
-- Convert to an A instance
+- ``build_async_engine_client`` yields a ``_StandbyEngineClient`` placeholder
+  instead of a real engine (no model weights / KV cache loaded);
+- ``init_app_state`` is skipped for type B (no serving state yet).
+
+After receiving a migration command, ``instantiate`` creates the real inference
+backend, ``receive`` restores scheduler + KV state, and ``activate`` flips the
+instance to type A.
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ import asyncio
 import json
 import os
 import time
-from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
@@ -33,107 +32,15 @@ from vllm_hi.common.protocol import (
     ReceiveStateRequest,
     ReceiveStateResponse,
 )
-from vllm_hi.common.state import VllmHiState
 from vllm_hi.common.utils import (
     resolve_register_ip,
     topology_from_args,
     visible_gpu_ids_from_env,
 )
-from vllm_hi.instance.host_client import HostClient
 from vllm_hi.migration.receiver import StateReceiver
 from vllm.logger import init_logger
 
 logger = init_logger("vllm.vllm_hi.instance.standby")
-
-
-async def run_standby_server(args, **uvicorn_kwargs) -> None:
-    """Standby startup of the B instance.
-
-    Skip build_async_engine_client; only start FastAPI (migration endpoints +
-    HostClient).
-    """
-    from vllm.entrypoints.launchers.launcher import serve_http, setup_server
-    from vllm.entrypoints.launchers.utils.server_utils import (
-        get_uvicorn_log_config,
-    )
-    import vllm.envs as envs
-
-    try:
-        from vllm.utils.system_utils import decorate_logs
-        decorate_logs("APIServer", skip_if_decorated=True)
-    except Exception:  # noqa: BLE001
-        pass
-
-    # During same-host migration, B's data plane (receiving + writing shm)
-    # shares CPU/memory bandwidth with A's inference. Bind the whole B-side
-    # APIServer process to the NUMA node of B's GPU so the socket recv buffer,
-    # tmpfs page faults, and shm memcpy all land on the B-side node, spatially
-    # isolated from A's inference (on the other NUMA node), eliminating
-    # cross-NUMA memory contention.
-    try:
-        from vllm_hi.common.utils import get_device_cpu_affinity
-
-        _b_cpu_affinity = get_device_cpu_affinity()
-        if _b_cpu_affinity:
-            os.sched_setaffinity(0, _b_cpu_affinity)
-            logger.info(
-                "[vllm_hi] B side bound process CPU affinity to %d CPUs",
-                len(_b_cpu_affinity),
-            )
-    except Exception:  # noqa: BLE001
-        logger.warning("[vllm_hi] B side CPU affinity binding failed (ignoring)")
-
-    import signal
-
-    def _interrupt_init(*_):
-        raise KeyboardInterrupt("terminated")
-
-    signal.signal(signal.SIGTERM, _interrupt_init)
-
-    listen_address, sock = setup_server(args, reuse_port=False)
-
-    app = _build_standby_app(args)
-
-    # The data-plane server is started lazily on the first receive request,
-    # using the selected backend. The backend is auto-selected by the migration
-    # coordinator based on whether A and B are on the same host and delivered
-    # via ReceiveStateRequest.
-
-    host_addr = getattr(args, "vllm_hi_host", None)
-    if host_addr:
-        asyncio.create_task(_register_b_to_host(app.state, args, host_addr))
-
-    log_config = get_uvicorn_log_config(args)
-    if log_config is not None:
-        uvicorn_kwargs["log_config"] = log_config
-
-    logger.info("[vllm_hi] B instance standby started at %s", listen_address)
-
-    shutdown_task = await serve_http(
-        app,
-        sock=sock,
-        enable_ssl_refresh=args.enable_ssl_refresh,
-        host=args.host,
-        port=args.port,
-        log_level=args.uvicorn_log_level,
-        access_log=not args.disable_uvicorn_access_log,
-        timeout_keep_alive=envs.VLLM_HTTP_TIMEOUT_KEEP_ALIVE,
-        ssl_keyfile=args.ssl_keyfile,
-        ssl_certfile=args.ssl_certfile,
-        ssl_ca_certs=args.ssl_ca_certs,
-        ssl_cert_reqs=args.ssl_cert_reqs,
-        ssl_ciphers=args.ssl_ciphers,
-        h11_max_incomplete_event_size=args.h11_max_incomplete_event_size,
-        h11_max_header_count=args.h11_max_header_count,
-        **uvicorn_kwargs,
-    )
-    try:
-        await shutdown_task
-    finally:
-        data_server_task = app.state.vllm_hi.data_server_task
-        if data_server_task is not None:
-            data_server_task.cancel()
-        sock.close()
 
 
 class _StandbyVllmConfig:
@@ -143,53 +50,51 @@ class _StandbyVllmConfig:
 
 
 class _StandbyEngineClient:
-    """Placeholder engine_client during B standby, satisfying serve_http's
-    watchdog/shutdown interface.
+    """Placeholder engine_client during B standby.
 
-    Replaced by the real AsyncLLM after instantiation (app.state.engine_client
-    = real_engine).
+    Satisfies the EngineClient interface that the native vLLM serving pipeline
+    (build_and_serve / build_app / serve_http / /health) touches, while holding
+    no model weights or KV cache. Replaced by the real AsyncLLM after
+    instantiation.
     """
 
     errored = False
     is_running = True
+    # build_app is called with model_config=None for the standby placeholder;
+    # the sagemaker/pooling routers explicitly handle None.
+    model_config = None
 
     @property
     def vllm_config(self):
         return _StandbyVllmConfig()
 
-    async def shutdown(self, timeout: float = 0.0) -> None:
+    async def get_supported_tasks(self) -> tuple:
+        # B has not loaded the model yet; "generate" is the default for a chat
+        # model. The real value is filled in by init_app_state at instantiation.
+        return ("generate",)
+
+    async def check_health(self) -> None:
+        # A standby placeholder has no engine that can die; always healthy.
+        return None
+
+    def shutdown(self, timeout: float = 0.0) -> None:
         logger.info("[vllm_hi] StandbyEngineClient shutdown (no-op)")
 
 
 async def _init_serving_state(app: FastAPI, state, engine) -> None:
-    """Attach the full vLLM serving state and routes so that B can serve new
-    requests after activation.
+    """Fill the vLLM serving state so B can serve new requests after activation.
 
-    During standby, B only has migration endpoints (no /v1/chat/completions).
-    After instantiation, call vLLM's native ``init_app_state`` to initialize
-    serving state (openai_serving_chat etc.) and register inference routes +
-    the exception handler, giving B the same inference capability as A. The
-    migration endpoints are unaffected.
-
-    Don't use ``register_api_routers``: it also registers the metrics
-    instrumentator, which calls ``app.add_middleware`` and raises
-    ``RuntimeError: Cannot add middleware after an application has started``
-    on an already-started app. Register only the inference routes
-    (models/chat/completions) here and skip metrics/lora/profile.
+    During standby the serving state (openai_serving_models / online_renderer /
+    serving_tokenization, etc.) was skipped because the placeholder engine has no
+    model. After instantiation, call the native (unpatched) init_app_state to
+    fill it with the real engine. The inference routes were already registered
+    at build_app time (unified A/B app), so only state needs filling here.
     """
-    from vllm.entrypoints.generate.api_router import register_generate_api_routers
     from vllm.entrypoints.launchers.api_server import app_state as app_state_module
-    from vllm.entrypoints.openai.models.api_router import (
-        attach_router as register_models_api_router,
-    )
-    from vllm.entrypoints.serve.exception_handling.register import (
-        init_exception_handler,
-    )
 
     # Use the original (not vllm_hi-wrapped) init_app_state: here we only want
-    # to attach vLLM's native serving state and must not inject vllm_hi state
-    # again (standby manages state.vllm_hi itself; re-injecting would overwrite
-    # the already-established receiver / resumed_queues etc.).
+    # to fill vLLM's native serving state with the real engine, and must not
+    # inject vllm_hi state again (standby manages state.vllm_hi itself).
     init_app_state = getattr(
         app_state_module, "_vllm_hi_original_init_app_state",
         app_state_module.init_app_state,
@@ -197,57 +102,23 @@ async def _init_serving_state(app: FastAPI, state, engine) -> None:
 
     supported_tasks = await engine.get_supported_tasks()
     await init_app_state(engine, state, state.args, supported_tasks)
-    register_models_api_router(app)
-    if "generate" in supported_tasks:
-        register_generate_api_routers(app)
-    init_exception_handler(app)
     logger.info(
-        "[vllm_hi] B instance attached vLLM serving routes (tasks=%s)",
+        "[vllm_hi] B instance filled serving state (tasks=%s)",
         sorted(supported_tasks),
     )
 
 
-def _build_standby_app(args) -> FastAPI:
-    """Build the B instance's FastAPI app (migration endpoints only)."""
+def attach_standby_endpoints(app: FastAPI) -> None:
+    """Register the standby (B-side) migration endpoints on the app.
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        logger.info("[vllm_hi] B instance FastAPI started")
-        try:
-            yield
-        finally:
-            host_client = app.state.vllm_hi.host_client
-            if host_client is not None:
-                await host_client.close()
-            logger.info("[vllm_hi] B instance FastAPI shut down")
-
-    app = FastAPI(title="vllm_hi StandbyInstance", lifespan=lifespan)
-    app.state.args = args
-    host_addr = getattr(args, "vllm_hi_host", None)
-    app.state.vllm_hi = VllmHiState(
-        app=app,
-        instance_type="B",
-        host_addr=host_addr,
-        data_port=getattr(args, "vllm_hi_data_port", 0) or 0,
-        engine_client=None,
-        host_client=HostClient(host_addr) if host_addr else None,
-        registered=False,
-        paused=False,
-    )
-    # serve_http needs app.state.engine_client (for watchdog and shutdown).
-    # During B standby use a placeholder; replace it with the real engine_client
-    # after instantiation.
-    app.state.engine_client = _StandbyEngineClient()
-
-    @app.get("/vllm_hi/status")
-    async def status():
-        return {
-            "active": True,
-            "package": "vllm_hi",
-            "role": "standby",
-            "type": "B",
-            "instantiated": app.state.vllm_hi.engine_client is not None,
-        }
+    Called from ``patch_build_app`` so both A and B apps carry the full set of
+    migration endpoints from startup; conversion (A→B / B→A) then only flips
+    ``instance_type`` and manages the engine, with no endpoint re-mounting.
+    Idempotent: a second call on the same app is a no-op.
+    """
+    if getattr(app.state, "_vllm_hi_standby_endpoints", False):
+        return
+    app.state._vllm_hi_standby_endpoints = True
 
     @app.post("/vllm_hi/migration/instantiate")
     async def instantiate(request: InstantiateRequest):
@@ -385,12 +256,6 @@ def _build_standby_app(args) -> FastAPI:
                 yield "data: [DONE]\n\n"
 
         return StreamingResponse(generate(), media_type="text/event-stream")
-
-    @app.get("/health")
-    async def health():
-        return {"status": "ok", "type": "B"}
-
-    return app
 
 
 def _clamp_util_to_free_gpu_memory(requested_util: float) -> float:

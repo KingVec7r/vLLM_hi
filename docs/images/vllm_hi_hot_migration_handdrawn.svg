@@ -1,0 +1,302 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2820" viewBox="0 0 1800 2820" role="img" aria-labelledby="title desc">
+  <title id="title">vLLM_hi 热迁移流程示意图</title>
+  <desc id="desc">基于 vLLM_hi 项目代码核对的十步热迁移流程，展示 Client、Host、源实例 A、目标实例 B 之间的控制面、数据面、停机窗口、服务切换、源实例处理及代码现状注意项。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowSolid" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M1,1 L11,6 L1,11 Z" fill="context-stroke"/>
+    </marker>
+    <pattern id="paperDots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#d8d3c5" opacity="0.38"/>
+    </pattern>
+    <filter id="rough" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="1" seed="17" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <style>
+      .txt{font-family:"Comic Sans MS","Microsoft YaHei","KaiTi",sans-serif;fill:#263238}
+      .mono{font-family:"Cascadia Mono","Consolas","Microsoft YaHei",monospace;fill:#263238}
+      .h1{font-size:48px;font-weight:700}.sub{font-size:22px}.lane{font-size:27px;font-weight:700}.step{font-size:25px;font-weight:700}.cardTitle{font-size:25px;font-weight:700}.body{font-size:20px}.small{font-size:17px}.tiny{font-size:15px}
+      .card{stroke:#3d4548;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:url(#rough)}
+      .sketch2{fill:none;stroke:#3d4548;stroke-width:1.2;opacity:.35;stroke-linecap:round;stroke-linejoin:round}
+      .ctrl{fill:none;stroke:#59666b;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .data{fill:none;stroke:#16697a;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrowSolid)}
+      .rpc{fill:none;stroke:#7b5aa6;stroke-width:3;stroke-dasharray:12 10;stroke-linecap:round;marker-end:url(#arrow)}
+      .warn{fill:none;stroke:#c24b3a;stroke-width:4;stroke-dasharray:12 9;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .muted{fill:#647075}.blue{fill:#0f6070}.purple{fill:#65458c}.red{fill:#a23d31}.green{fill:#356f52}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1800" height="2820" fill="#fbfaf4"/>
+  <rect x="0" y="0" width="1800" height="2820" fill="url(#paperDots)"/>
+
+  <path d="M48 72 C260 45, 620 48, 1040 68 S1515 84, 1750 58" fill="none" stroke="#d9a441" stroke-width="16" opacity="0.18" stroke-linecap="round"/>
+  <text x="70" y="90" class="txt h1">vLLM_hi 热迁移流程</text>
+  <text x="72" y="128" class="txt sub muted">基于实际代码调用链核对 · 简化手绘版 · A 持续服务直到暂停点</text>
+
+  <g transform="translate(72,153)">
+    <path d="M0 12 C38 7,76 15,112 10" class="ctrl"/>
+    <text x="130" y="18" class="txt small">HTTP 控制面</text>
+    <path d="M300 12 C345 7,390 15,435 10" class="data"/>
+    <text x="455" y="18" class="txt small">TCP / CUDA IPC 数据面</text>
+    <path d="M720 12 C760 7,800 15,840 10" class="rpc"/>
+    <text x="860" y="18" class="txt small">EngineCore / Worker 内部 RPC</text>
+    <rect x="1220" y="-7" width="250" height="38" rx="12" fill="#fde8df" stroke="#c24b3a" stroke-width="2"/>
+    <text x="1345" y="13" text-anchor="middle" dominant-baseline="middle" class="txt small red">橙红底 = 停机窗口</text>
+  </g>
+
+  <g>
+    <rect x="42" y="205" width="128" height="58" rx="16" fill="#f2ead8" class="card"/>
+    <text x="106" y="235" text-anchor="middle" dominant-baseline="middle" class="txt lane">阶段</text>
+    <rect x="205" y="205" width="225" height="58" rx="16" fill="#e9f2f7" class="card"/>
+    <text x="318" y="235" text-anchor="middle" dominant-baseline="middle" class="txt lane">Client</text>
+    <rect x="465" y="205" width="415" height="58" rx="16" fill="#e7f4ee" class="card"/>
+    <text x="672" y="235" text-anchor="middle" dominant-baseline="middle" class="txt lane">Host / Scheduler</text>
+    <rect x="915" y="205" width="365" height="58" rx="16" fill="#fff0db" class="card"/>
+    <text x="1098" y="235" text-anchor="middle" dominant-baseline="middle" class="txt lane">源实例 A</text>
+    <rect x="1315" y="205" width="445" height="58" rx="16" fill="#eee9f7" class="card"/>
+    <text x="1538" y="235" text-anchor="middle" dominant-baseline="middle" class="txt lane">目标实例 B</text>
+  </g>
+
+  <path d="M187 276 C182 760,191 1400,185 2770" fill="none" stroke="#c8c3b7" stroke-width="2" stroke-dasharray="7 12"/>
+  <path d="M447 276 C442 760,451 1400,445 2770" fill="none" stroke="#c8c3b7" stroke-width="2" stroke-dasharray="7 12"/>
+  <path d="M897 276 C892 760,901 1400,895 2770" fill="none" stroke="#c8c3b7" stroke-width="2" stroke-dasharray="7 12"/>
+  <path d="M1297 276 C1292 760,1301 1400,1295 2770" fill="none" stroke="#c8c3b7" stroke-width="2" stroke-dasharray="7 12"/>
+
+  <g transform="rotate(-1 105 342)">
+    <rect x="48" y="292" width="114" height="92" rx="18" fill="#fff7d6" class="card"/>
+    <rect x="52" y="296" width="114" height="92" rx="18" class="sketch2"/>
+    <text x="105" y="325" text-anchor="middle" class="txt step">01</text>
+    <text x="105" y="357" text-anchor="middle" class="txt body">提交迁移</text>
+  </g>
+  <rect x="222" y="291" width="194" height="94" rx="15" fill="#f4f9fc" class="card"/>
+  <text x="319" y="319" text-anchor="middle" class="txt cardTitle">POST /migrate</text>
+  <text x="319" y="348" text-anchor="middle" class="txt small">src / dst / target*</text>
+  <text x="319" y="373" text-anchor="middle" class="txt small">type / tn</text>
+  <rect x="486" y="287" width="372" height="105" rx="15" fill="#edf8f2" class="card"/>
+  <text x="672" y="317" text-anchor="middle" class="txt cardTitle">立即返回 migration_id</text>
+  <text x="507" y="347" class="txt small">create_pending_result → asyncio.create_task</text>
+  <text x="507" y="374" class="txt small">/status 轮询 current_step + step_history</text>
+  <path d="M416 334 C442 325,458 327,486 336" class="ctrl"/>
+  <path d="M486 374 C455 405,416 411,388 391" class="ctrl"/>
+
+  <g transform="rotate(1 105 500)">
+    <rect x="48" y="431" width="114" height="108" rx="18" fill="#dff2e8" class="card"/>
+    <rect x="45" y="435" width="114" height="108" rx="18" class="sketch2"/>
+    <text x="105" y="466" text-anchor="middle" class="txt step">02</text>
+    <text x="105" y="500" text-anchor="middle" class="txt body">校验 +</text>
+    <text x="105" y="528" text-anchor="middle" class="txt body">参数填充</text>
+  </g>
+  <rect x="486" y="425" width="372" height="195" rx="18" fill="#edf8f2" class="card"/>
+  <text x="672" y="458" text-anchor="middle" class="txt cardTitle">MigrationCoordinator</text>
+  <text x="507" y="491" class="txt body">① 仅校验：src 存在且 A；dst 存在且 B</text>
+  <text x="507" y="522" class="txt body">② target_tp / pp / util / model 缺省取 src</text>
+  <text x="507" y="553" class="txt body">③ 双方 registry status → MIGRATING</text>
+  <text x="507" y="584" class="txt body">④ select_backend(src.ip, dst.ip)</text>
+  <path d="M870 448 C1030 422,1235 426,1448 454" fill="none" stroke="#78858a" stroke-width="2" stroke-dasharray="8 8"/>
+  <rect x="936" y="463" width="810" height="134" rx="18" fill="#f7f4fb" class="card"/>
+  <text x="956" y="494" class="txt cardTitle purple">后端选择（代码真实优先级）</text>
+  <text x="956" y="526" class="txt body">显式 VLLM_HI_TRANSFER_BACKEND：只查“存在 + implemented”，不跑 available()</text>
+  <text x="956" y="557" class="txt body">自动：同机且全卡 P2P → cuda_ipc；跨机 RDMA 当前是骨架 → tcp_shm</text>
+  <text x="956" y="584" class="txt small red">注意：显式 cuda_ipc 不可用时不会自动降级，后续会失败</text>
+
+  <g transform="rotate(-1 105 706)">
+    <rect x="48" y="645" width="114" height="118" rx="18" fill="#eadff5" class="card"/>
+    <rect x="52" y="642" width="114" height="118" rx="18" class="sketch2"/>
+    <text x="105" y="680" text-anchor="middle" class="txt step">03</text>
+    <text x="105" y="714" text-anchor="middle" class="txt body">B 实例化</text>
+  </g>
+  <rect x="1329" y="639" width="416" height="154" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="672" text-anchor="middle" class="txt cardTitle">POST /migration/instantiate</text>
+  <text x="1352" y="706" class="txt body">真 AsyncLLM / EngineCore / Worker 此刻出现</text>
+  <text x="1352" y="738" class="txt body">StateReceiver + serving state</text>
+  <text x="1352" y="770" class="txt body">pause_generation("keep")：冻结 B</text>
+  <path d="M858 693 C1015 670,1160 676,1329 696" class="ctrl"/>
+  <text x="1080" y="660" text-anchor="middle" class="txt small muted">timeout 300s · util 可能按空闲显存下调</text>
+
+  <g transform="rotate(1 105 965)">
+    <rect x="48" y="824" width="114" height="144" rx="18" fill="#dceff4" class="card"/>
+    <rect x="45" y="827" width="114" height="144" rx="18" class="sketch2"/>
+    <text x="105" y="860" text-anchor="middle" class="txt step">04</text>
+    <text x="105" y="895" text-anchor="middle" class="txt body">建通道</text>
+    <text x="105" y="924" text-anchor="middle" class="txt body">+</text>
+    <text x="105" y="953" text-anchor="middle" class="txt body">全量传输</text>
+  </g>
+  <rect x="1327" y="819" width="420" height="104" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="852" text-anchor="middle" class="txt cardTitle">POST /migration/receive</text>
+  <text x="1349" y="883" class="txt body">setup_remap(src 注册拓扑, dst 真实拓扑)</text>
+  <text x="1349" y="910" class="txt small">_ensure_data_server：数据端口开始监听</text>
+  <path d="M858 844 C1030 807,1160 821,1327 852" class="ctrl"/>
+
+  <rect x="927" y="948" width="341" height="205" rx="18" fill="#fff5e7" class="card"/>
+  <text x="1098" y="981" text-anchor="middle" class="txt cardTitle">A：collect_full</text>
+  <text x="949" y="1014" class="txt body">EngineCore：scheduler 快照</text>
+  <text x="949" y="1045" class="txt body">filter：只取 block_table 引用块</text>
+  <text x="949" y="1076" class="txt body">Worker：D2H + shm 后台收集</text>
+  <text x="949" y="1107" class="txt small purple">IPC：只导出 handle，不落 CPU</text>
+  <text x="949" y="1136" class="txt small muted">meta 中包含 request / block / KV 描述</text>
+  <path d="M858 980 C884 970,899 970,927 981" class="ctrl"/>
+  <text x="675" y="976" text-anchor="middle" class="txt small muted">POST A /collect {mode:"full"}</text>
+
+  <rect x="1327" y="948" width="420" height="205" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="981" text-anchor="middle" class="txt cardTitle">B：remap_and_restore</text>
+  <text x="1349" y="1014" class="txt body">TopologyRemapper（必要时算 head shard）</text>
+  <text x="1349" y="1045" class="txt body">SET_SCHEDULER_STATE → block_mapping</text>
+  <text x="1349" y="1076" class="txt body">每 src_rank 写 shm + NUMA / madvise</text>
+  <text x="1349" y="1107" class="txt body">Worker：按 mapping / head 切片上 GPU</text>
+  <text x="1349" y="1136" class="txt small purple">IPC：GPU→GPU 连续区间 memcpy</text>
+  <path d="M1268 1054 C1288 1047,1304 1048,1327 1055" class="data"/>
+  <text x="1298" y="1018" text-anchor="middle" class="txt small blue">meta + KV</text>
+  <path d="M1327 1138 C1306 1171,1280 1172,1257 1141" class="ctrl"/>
+  <text x="1297" y="1183" text-anchor="middle" class="txt small green">ACK 后 A /collect 才返回</text>
+  <rect x="486" y="1034" width="372" height="105" rx="16" fill="#edf8f2" class="card"/>
+  <text x="672" y="1066" text-anchor="middle" class="txt cardTitle">Host 只做编排</text>
+  <text x="508" y="1098" class="txt body">HTTP 下发 mode / backend / dst_addr</text>
+  <text x="508" y="1127" class="txt small red">scheduler 状态实际也走数据面 meta</text>
+
+  <g transform="rotate(-1 105 1272)">
+    <rect x="48" y="1191" width="114" height="150" rx="18" fill="#dff2e8" class="card"/>
+    <rect x="52" y="1188" width="114" height="150" rx="18" class="sketch2"/>
+    <text x="105" y="1228" text-anchor="middle" class="txt step">05</text>
+    <text x="105" y="1263" text-anchor="middle" class="txt body">增量收敛</text>
+    <text x="105" y="1292" text-anchor="middle" class="txt small">A 仍服务</text>
+  </g>
+  <rect x="487" y="1186" width="371" height="178" rx="18" fill="#edf8f2" class="card"/>
+  <text x="672" y="1218" text-anchor="middle" class="txt cardTitle">自适应循环 round 1..N</text>
+  <text x="508" y="1250" class="txt body">A collect_incremental：与上一快照 diff</text>
+  <text x="508" y="1281" class="txt body">只传新增物理块 → B apply_incremental</text>
+  <text x="508" y="1312" class="txt small red">终止：最多 8 轮 / 连续 2 轮字节数不降</text>
+  <text x="508" y="1338" class="txt small red">或单轮 block_count ≤ 1</text>
+  <rect x="928" y="1200" width="340" height="137" rx="18" fill="#fff5e7" class="card"/>
+  <text x="1098" y="1233" text-anchor="middle" class="txt cardTitle">A 持续解码</text>
+  <text x="949" y="1267" class="txt body">生成新 token / 新 KV</text>
+  <text x="949" y="1298" class="txt body">每轮生成更小的增量</text>
+  <rect x="1328" y="1200" width="418" height="137" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="1233" text-anchor="middle" class="txt cardTitle">B 持续追赶</text>
+  <text x="1350" y="1267" class="txt body">增量 scheduler + KV 恢复</text>
+  <text x="1350" y="1298" class="txt body">每轮 ACK 后进入下一轮</text>
+  <path d="M1268 1260 C1288 1252,1306 1253,1328 1260" class="data"/>
+  <path d="M1329 1328 C1270 1380,1030 1380,928 1328" fill="none" stroke="#16697a" stroke-width="4" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+  <text x="1120" y="1380" class="txt small blue">重复直到收敛 / 达上限</text>
+
+  <rect x="26" y="1400" width="1747" height="421" rx="26" fill="#fde8df" opacity="0.66" stroke="#d58469" stroke-width="2.5" stroke-dasharray="13 10"/>
+  <path d="M192 1418 C179 1530,181 1692,194 1798" fill="none" stroke="#c24b3a" stroke-width="5" stroke-linecap="round"/>
+  <text x="74" y="1440" class="txt small red">停机窗口</text>
+
+  <g transform="rotate(1 105 1498)">
+    <rect x="48" y="1438" width="114" height="118" rx="18" fill="#f8cfc2" class="card"/>
+    <rect x="45" y="1441" width="114" height="118" rx="18" class="sketch2"/>
+    <text x="105" y="1475" text-anchor="middle" class="txt step">06</text>
+    <text x="105" y="1510" text-anchor="middle" class="txt body">暂停 A</text>
+  </g>
+  <rect x="928" y="1432" width="340" height="127" rx="18" fill="#fff0e8" class="card"/>
+  <text x="1098" y="1465" text-anchor="middle" class="txt cardTitle">POST /migration/pause</text>
+  <text x="950" y="1499" class="txt body">pause_generation("keep")</text>
+  <text x="950" y="1530" class="txt body">不排空 · 不清 KV · 停止新 token</text>
+  <path d="M858 1477 C883 1467,901 1468,928 1478" class="ctrl"/>
+
+  <g transform="rotate(-1 105 1670)">
+    <rect x="48" y="1601" width="114" height="130" rx="18" fill="#f8cfc2" class="card"/>
+    <rect x="52" y="1598" width="114" height="130" rx="18" class="sketch2"/>
+    <text x="105" y="1638" text-anchor="middle" class="txt step">07</text>
+    <text x="105" y="1673" text-anchor="middle" class="txt body">最终增量</text>
+  </g>
+  <rect x="487" y="1594" width="371" height="139" rx="18" fill="#fff0e8" class="card"/>
+  <text x="672" y="1627" text-anchor="middle" class="txt cardTitle">仍是 mode="incremental"</text>
+  <text x="508" y="1661" class="txt body">paused=True → chunk_size = 1&lt;&lt;20</text>
+  <text x="508" y="1692" class="txt body">boost_cpu=True，一次收尾</text>
+  <rect x="928" y="1594" width="340" height="139" rx="18" fill="#fff0e8" class="card"/>
+  <text x="1098" y="1627" text-anchor="middle" class="txt cardTitle">A：冻结后的最后差量</text>
+  <text x="950" y="1661" class="txt body">不会再产生新 KV</text>
+  <text x="950" y="1692" class="txt small">send_state 阻塞等 applied ACK</text>
+  <rect x="1328" y="1594" width="418" height="139" rx="18" fill="#f7eefa" class="card"/>
+  <text x="1537" y="1627" text-anchor="middle" class="txt cardTitle">B：完整落地再 ACK</text>
+  <text x="1350" y="1661" class="txt body">data_lock 串行恢复</text>
+  <text x="1350" y="1692" class="txt small red">ACK 同步避免 activate 后状态不一致</text>
+  <path d="M1268 1655 C1288 1648,1306 1648,1328 1655" class="data"/>
+  <path d="M1328 1715 C1307 1750,1281 1750,1257 1717" class="ctrl"/>
+
+  <g transform="rotate(1 105 1885)">
+    <rect x="48" y="1842" width="114" height="125" rx="18" fill="#eadff5" class="card"/>
+    <rect x="45" y="1845" width="114" height="125" rx="18" class="sketch2"/>
+    <text x="105" y="1878" text-anchor="middle" class="txt step">08</text>
+    <text x="105" y="1913" text-anchor="middle" class="txt body">激活 B</text>
+  </g>
+  <rect x="1328" y="1837" width="418" height="170" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="1871" text-anchor="middle" class="txt cardTitle">POST /migration/activate</text>
+  <text x="1350" y="1905" class="txt body">① instance_type = A</text>
+  <text x="1350" y="1936" class="txt body">② await data_idle.wait()</text>
+  <text x="1350" y="1967" class="txt body">③ register_resumed_outputs + 预热 detokenizer</text>
+  <text x="1350" y="1998" class="txt body">④ resume_generation（只吐后续 token）</text>
+  <path d="M858 1892 C1023 1858,1165 1870,1328 1897" class="ctrl"/>
+
+  <g transform="rotate(-1 105 2124)">
+    <rect x="48" y="2046" width="114" height="150" rx="18" fill="#dceff4" class="card"/>
+    <rect x="52" y="2043" width="114" height="150" rx="18" class="sketch2"/>
+    <text x="105" y="2083" text-anchor="middle" class="txt step">09</text>
+    <text x="105" y="2118" text-anchor="middle" class="txt body">服务切换</text>
+    <text x="105" y="2147" text-anchor="middle" class="txt small">连接不断</text>
+  </g>
+  <rect x="486" y="2038" width="372" height="183" rx="18" fill="#edf8f2" class="card"/>
+  <text x="672" y="2072" text-anchor="middle" class="txt cardTitle">原子 registry 接管</text>
+  <text x="507" y="2106" class="txt body">promote_standby_to_active</text>
+  <text x="507" y="2137" class="txt body">type / status / model / topology / route</text>
+  <text x="507" y="2168" class="txt body">step=switch_service_done</text>
+  <text x="507" y="2199" class="txt small blue">router.switch_inflight(B.base_url)</text>
+  <rect x="1328" y="2049" width="418" height="129" rx="18" fill="#f4effa" class="card"/>
+  <text x="1537" y="2082" text-anchor="middle" class="txt cardTitle">GET /resume_stream</text>
+  <text x="1350" y="2116" class="txt body">resumed_queues 逐 token 产出 SSE</text>
+  <text x="1350" y="2147" class="txt small">仅迁移中的流式请求可无缝续传</text>
+  <path d="M1328 2095 C1148 2058,1023 2060,858 2102" class="ctrl"/>
+  <path d="M486 2160 C438 2172,405 2161,416 2128" class="ctrl"/>
+  <rect x="222" y="2056" width="194" height="129" rx="18" fill="#f4f9fc" class="card"/>
+  <text x="319" y="2089" text-anchor="middle" class="txt cardTitle">原 SSE 连接</text>
+  <text x="243" y="2123" class="txt body">不断开</text>
+  <text x="243" y="2154" class="txt body">只见短暂吞吐下降</text>
+
+  <g transform="rotate(1 105 2358)">
+    <rect x="48" y="2283" width="114" height="150" rx="18" fill="#fff7d6" class="card"/>
+    <rect x="45" y="2286" width="114" height="150" rx="18" class="sketch2"/>
+    <text x="105" y="2323" text-anchor="middle" class="txt step">10</text>
+    <text x="105" y="2358" text-anchor="middle" class="txt body">源实例</text>
+    <text x="105" y="2387" text-anchor="middle" class="txt body">收尾</text>
+  </g>
+  <rect x="220" y="2278" width="494" height="157" rx="18" fill="#fbf5e8" class="card"/>
+  <text x="467" y="2312" text-anchor="middle" class="txt cardTitle">destroy_source（默认）</text>
+  <text x="243" y="2347" class="txt body">A /destroy → registry.deregister(src)</text>
+  <text x="243" y="2379" class="txt small green">旧 A 释放；新 B→A 已接管原模型名</text>
+  <text x="243" y="2408" class="txt small">deregister 有路由守卫</text>
+  <rect x="733" y="2278" width="494" height="157" rx="18" fill="#fbf5e8" class="card"/>
+  <text x="980" y="2312" text-anchor="middle" class="txt cardTitle">preserve_source</text>
+  <text x="756" y="2347" class="txt body">A /convert_to_b → update_type(B)</text>
+  <text x="756" y="2379" class="txt small">卸载引擎，保留为待命 B</text>
+  <text x="756" y="2408" class="txt small red">现代码存在误删新 A 路由的风险</text>
+  <rect x="1246" y="2278" width="500" height="157" rx="18" fill="#fbf5e8" class="card"/>
+  <text x="1496" y="2312" text-anchor="middle" class="txt cardTitle">keep_source_active</text>
+  <text x="1269" y="2347" class="txt body">旧 A /resume，原模型名继续路由</text>
+  <text x="1269" y="2379" class="txt small">新 A 使用 {base}@{suffix} 独立模型名</text>
+  <text x="1269" y="2408" class="txt small green">两台 A 并存</text>
+
+  <rect x="220" y="2470" width="1007" height="117" rx="22" fill="#e8f4ed" stroke="#356f52" stroke-width="4" class="card"/>
+  <text x="723" y="2508" text-anchor="middle" class="txt cardTitle green">成功结果</text>
+  <text x="723" y="2544" text-anchor="middle" class="mono body">MigrationResult(id, SUCCESS, duration, new_active_instance, step_history)</text>
+  <path d="M980 2435 C954 2452,917 2462,880 2470" class="ctrl"/>
+
+  <rect x="1246" y="2460" width="500" height="178" rx="22" fill="#fdeceb" stroke="#c24b3a" stroke-width="4" class="card"/>
+  <text x="1496" y="2497" text-anchor="middle" class="txt cardTitle red">任一步异常 → FAILED</text>
+  <text x="1269" y="2532" class="txt body">当前代码只把 registry 状态改为：</text>
+  <text x="1269" y="2564" class="mono body">src→ACTIVE，dst→STANDBY</text>
+  <text x="1269" y="2596" class="txt small red">不会 resume A，也不会销毁 / 复位 B</text>
+  <text x="1269" y="2623" class="txt small red">因此不是完整运行态回滚</text>
+  <path d="M858 2521 C1017 2484,1104 2487,1246 2515" class="warn"/>
+
+  <g transform="rotate(-0.5 900 2720)">
+    <rect x="70" y="2670" width="1660" height="92" rx="20" fill="#fff7d6" stroke="#bc9336" stroke-width="3" stroke-dasharray="10 7"/>
+    <text x="95" y="2706" class="txt body">代码核对提示：final 不是独立模式；调度器状态跟随数据面 meta；RDMA 尚未实现；</text>
+    <text x="95" y="2738" class="txt body">step_history 的 validate 只是初始值而非真实 notify；源实例收尾异常会被 warning 吞掉，迁移仍可能返回 SUCCESS。</text>
+  </g>
+
+  <text x="70" y="2800" class="txt tiny muted">核对范围：coordinator/migration.py · server.py · registry.py · router.py · instance/standby.py · activate_endpoint.py · migration/{collector,receiver,remapper,resume}.py · backends/*</text>
+</svg>

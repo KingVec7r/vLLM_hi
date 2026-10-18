@@ -49,7 +49,7 @@ def now_iso8601() -> str:
 
 
 # SamplingParams deserialization cache (base64 string -> object).
-# During live migration most requests share the same SamplingParams (e.g. identical
+# During hot migration most requests share the same SamplingParams (e.g. identical
 # temperature/top_p/max_tokens); deserializing the same object per request via
 # pickle.loads becomes the main CPU cost of scheduler-state rebuild.
 # Bounded cache with FIFO eviction, to avoid unbounded memory growth from
@@ -125,7 +125,7 @@ def get_device_cpu_affinity() -> list[int] | None:
 def bind_process_to_device_numa() -> None:
     """Bind the current process to the NUMA node of its visible GPU.
 
-    During same-host live migration the A/B instances share CPU and memory
+    During same-host hot migration the A/B instances share CPU and memory
     bandwidth. vLLM only sets CPU affinity for the Worker processes; the
     APIServer and EngineCore can still drift across the whole machine (0-127).
     When B performs gigabyte-scale data-plane operations (writing shm / loading

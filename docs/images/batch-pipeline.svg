@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 680 820" role="img" xmlns="http://www.w3.org/2000/svg" font-family="'Comic Sans MS','Segoe Print','Chalkboard SE','KaiTi','STKaiti',cursive">
+<title>vLLM 在线推理一批请求的完整调度链路</title>
+<desc>从左列下行：客户端、Serving 层、AsyncLLM 提交、EngineCore 入队、调度选批、Worker GPU 执行；右侧上行回流：update_from_output、output_processor、detokenize、SSE 返回客户端。</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<text x="228" y="28" font-size="11" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">一批并发请求</text>
+<circle cx="306" cy="28" r="5" fill="#B5D4F4" stroke="#185FA5" stroke-width="1"/>
+<circle cx="340" cy="28" r="5" fill="#B5D4F4" stroke="#185FA5" stroke-width="1"/>
+<circle cx="374" cy="28" r="5" fill="#B5D4F4" stroke="#185FA5" stroke-width="1"/>
+<path d="M340 34 L340 52" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+<rect x="228" y="56" width="224" height="48" rx="10" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+<rect x="229.5" y="57.8" width="224" height="48" rx="10" fill="none" stroke="#5F5E5A" stroke-width="0.8" opacity="0.35"/>
+<text x="340" y="73" font-size="14" font-weight="500" fill="#2C2C2A" text-anchor="middle" dominant-baseline="central">客户端</text>
+<text x="340" y="90" font-size="12" fill="#5F5E5A" text-anchor="middle" dominant-baseline="central">POST /v1/chat/completions</text>
+
+<rect x="28" y="112" width="284" height="212" rx="16" fill="#F1EFE8" fill-opacity="0.5" stroke="#888780" stroke-width="1" stroke-dasharray="7 6"/>
+<text x="44" y="128" font-size="12" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">Serving 进程 · FastAPI + AsyncLLM</text>
+<rect x="44" y="148" width="252" height="56" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<rect x="45.6" y="149.8" width="252" height="56" rx="10" fill="none" stroke="#185FA5" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="168" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Serving 层 · 请求入口</text>
+<text x="170" y="188" font-size="11" fill="#185FA5" text-anchor="middle" dominant-baseline="central">OpenAIServingChat.create_chat_completion()</text>
+<rect x="44" y="248" width="252" height="56" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<rect x="45.6" y="249.8" width="252" height="56" rx="10" fill="none" stroke="#185FA5" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="268" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">① AsyncLLM.generate()</text>
+<text x="170" y="288" font-size="12" fill="#185FA5" text-anchor="middle" dominant-baseline="central">② ZMQ + msgpack 发往 EngineCore</text>
+
+<rect x="28" y="336" width="284" height="308" rx="16" fill="#F1EFE8" fill-opacity="0.5" stroke="#888780" stroke-width="1" stroke-dasharray="7 6"/>
+<text x="44" y="352" font-size="12" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">EngineCore 进程 · 调度与持续批处理</text>
+<rect x="44" y="368" width="252" height="56" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.2"/>
+<rect x="45.6" y="369.8" width="252" height="56" rx="10" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="388" font-size="14" font-weight="500" fill="#3C3489" text-anchor="middle" dominant-baseline="central">③ EngineCore.add_request()</text>
+<text x="170" y="408" font-size="12" fill="#534AB7" text-anchor="middle" dominant-baseline="central">preprocess 成 Request，入 waiting</text>
+<rect x="44" y="468" width="252" height="56" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.2"/>
+<rect x="45.6" y="469.8" width="252" height="56" rx="10" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="488" font-size="14" font-weight="500" fill="#3C3489" text-anchor="middle" dominant-baseline="central">waiting / running 两组队列</text>
+<text x="170" y="508" font-size="12" fill="#534AB7" text-anchor="middle" dominant-baseline="central">新请求排队，老请求继续解码</text>
+<rect x="44" y="568" width="252" height="56" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.2"/>
+<rect x="45.6" y="569.8" width="252" height="56" rx="10" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="588" font-size="14" font-weight="500" fill="#3C3489" text-anchor="middle" dominant-baseline="central">④ scheduler.schedule()</text>
+<text x="170" y="608" font-size="12" fill="#534AB7" text-anchor="middle" dominant-baseline="central">拼批 ≤ max_num_seqs，分配 KV block</text>
+
+<rect x="28" y="656" width="284" height="144" rx="16" fill="#F1EFE8" fill-opacity="0.5" stroke="#888780" stroke-width="1" stroke-dasharray="7 6"/>
+<text x="44" y="672" font-size="12" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">Worker 进程 · GPU</text>
+<text x="178" y="664" font-size="11" fill="#3B6D11" text-anchor="start" dominant-baseline="central">⑤ 广播给所有 worker</text>
+<text x="178" y="678" font-size="11" fill="#3B6D11" text-anchor="start" dominant-baseline="central">TP 多 worker 并行</text>
+<rect x="44" y="704" width="252" height="76" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.2"/>
+<rect x="45.6" y="705.8" width="252" height="76" rx="10" fill="none" stroke="#3B6D11" stroke-width="0.8" opacity="0.35"/>
+<text x="170" y="724" font-size="14" font-weight="500" fill="#27500A" text-anchor="middle" dominant-baseline="central">⑥ Worker · execute_model()</text>
+<text x="170" y="744" font-size="12" fill="#3B6D11" text-anchor="middle" dominant-baseline="central">input_batch → attention 读写 KV cache</text>
+<text x="170" y="762" font-size="12" fill="#3B6D11" text-anchor="middle" dominant-baseline="central">MLP → logits → sample 出新 token</text>
+
+<rect x="368" y="656" width="284" height="144" rx="16" fill="#F1EFE8" fill-opacity="0.5" stroke="#888780" stroke-width="1" stroke-dasharray="7 6"/>
+<text x="384" y="672" font-size="12" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">EngineCore 进程 · 输出侧</text>
+<rect x="384" y="704" width="252" height="76" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.2"/>
+<rect x="385.6" y="705.8" width="252" height="76" rx="10" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.35"/>
+<text x="510" y="724" font-size="14" font-weight="500" fill="#3C3489" text-anchor="middle" dominant-baseline="central">⑦ update_from_output()</text>
+<text x="510" y="744" font-size="12" fill="#534AB7" text-anchor="middle" dominant-baseline="central">追加 token，未完成者回 running</text>
+<text x="510" y="762" font-size="12" fill="#534AB7" text-anchor="middle" dominant-baseline="central">释放 / 续分配 KV block</text>
+
+<rect x="368" y="336" width="284" height="308" rx="16" fill="#F1EFE8" fill-opacity="0.5" stroke="#888780" stroke-width="1" stroke-dasharray="7 6"/>
+<text x="384" y="352" font-size="12" fill="#5F5E5A" text-anchor="start" dominant-baseline="central">Serving 进程 · 输出处理</text>
+<rect x="384" y="568" width="252" height="56" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<rect x="385.6" y="569.8" width="252" height="56" rx="10" fill="none" stroke="#185FA5" stroke-width="0.8" opacity="0.35"/>
+<text x="510" y="588" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">⑧ EngineCore 输出 → ZMQ</text>
+<text x="510" y="608" font-size="12" fill="#185FA5" text-anchor="middle" dominant-baseline="central">AsyncLLM.output_processor</text>
+<rect x="384" y="468" width="252" height="56" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<rect x="385.6" y="469.8" width="252" height="56" rx="10" fill="none" stroke="#185FA5" stroke-width="0.8" opacity="0.35"/>
+<text x="510" y="488" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">detokenize → RequestOutput</text>
+<text x="510" y="508" font-size="12" fill="#185FA5" text-anchor="middle" dominant-baseline="central">含新 token 与 finish_reason</text>
+<rect x="384" y="368" width="252" height="56" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<rect x="385.6" y="369.8" width="252" height="56" rx="10" fill="none" stroke="#185FA5" stroke-width="0.8" opacity="0.35"/>
+<text x="510" y="388" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Serving 层转 OpenAI 格式</text>
+<text x="510" y="408" font-size="12" fill="#185FA5" text-anchor="middle" dominant-baseline="central">SSE 逐 token 流式推送</text>
+
+<path d="M340 104 C340 128 250 132 174 146" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M170 204 L170 246" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M170 304 L170 366" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M170 424 L170 466" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M170 524 L170 566" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M170 624 L170 702" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M298 742 L380 742" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="340" y="790" font-size="11" fill="#5F5E5A" text-anchor="middle" dominant-baseline="central">结果回流</text>
+<path d="M510 704 L510 626" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M510 568 L510 526" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M510 468 L510 426" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M510 368 L510 112 Q510 88 486 84 L460 84" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<path d="M384 722 L356 722 Q348 722 348 714 L348 606 Q348 598 340 598 L304 598" fill="none" stroke="#534AB7" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+<text x="300" y="638" font-size="11" fill="#534AB7" text-anchor="start" dominant-baseline="central">下一轮</text>
+<text x="300" y="652" font-size="11" fill="#534AB7" text-anchor="start" dominant-baseline="central">step()</text>
+</svg>

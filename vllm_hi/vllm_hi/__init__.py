@@ -13,7 +13,7 @@ Customizations include:
    - log key information for every chat request on the server side.
 3. inject engine_internals patches into every process via the
    ``vllm.general_plugins`` entry point (see ``vllm_hi.patches.plugin``),
-   supporting state collection and recovery for inference-time live migration.
+   supporting state collection and recovery for inference-time hot migration.
 """
 
 __version__ = "0.1.0"

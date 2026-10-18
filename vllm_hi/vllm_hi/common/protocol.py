@@ -49,7 +49,7 @@ class RegisterInstanceResponse(BaseModel):
 # --- Migration command ---
 
 class MigrationCommand(BaseModel):
-    """live migration command."""
+    """Hot migration command."""
 
     src_vllm_hi_id: str = Field(..., description="Source instance ID (type A)")
     dst_vllm_hi_id: str = Field(..., description="Destination instance ID (type B)")

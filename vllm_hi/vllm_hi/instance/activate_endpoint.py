@@ -7,9 +7,10 @@
     POST /vllm_hi/migration/destroy       - destroy the instance
     POST /vllm_hi/migration/convert_to_b  - convert to type B
 
-B instance endpoints are defined by ``_build_standby_app`` in
-``instance.standby``, not in this module. The data-plane TCP endpoints (on both
-A and B) listen on data_port and receive/send state data.
+B-side migration endpoints are defined by ``attach_standby_endpoints`` in
+``instance.standby``. Both endpoint sets are mounted at build_app time (unified
+A/B app); this module holds the source-side (A) endpoints. The data-plane TCP
+endpoints (on both A and B) listen on data_port and receive/send state data.
 """
 
 from __future__ import annotations
@@ -39,14 +40,19 @@ def attach_active_endpoints(state) -> None:
     """Register the A instance's migration endpoint routes on the app (resolved
     from state).
 
-    Called from patch_init_app_state. The app is provided via the
-    ``state.vllm_hi.app`` back-reference set up by the build_app patch.
+    Called from ``patch_build_app`` so both A and B apps carry the full set of
+    migration endpoints from startup; conversion (A→B / B→A) then only flips
+    ``instance_type`` and manages the engine, with no endpoint re-mounting.
+    Idempotent: a second call on the same app is a no-op.
     """
     hi = getattr(state, "vllm_hi", None)
     app = getattr(hi, "app", None) if hi is not None else None
     if app is None:
         logger.warning("[vllm_hi] app not found, skipping migration endpoint registration")
         return
+    if getattr(app.state, "_vllm_hi_active_endpoints", False):
+        return
+    app.state._vllm_hi_active_endpoints = True
     _attach_active_endpoints(app, state)
 
 

@@ -41,6 +41,7 @@ def apply() -> dict[str, bool]:
     patch_build_app()
     patch_chat_completion_logging()
     patch_cli_args()
+    patch_build_async_engine_client()
     patch_init_app_state()
     patch_run_server()
     patch_engine_internals()
@@ -95,12 +96,15 @@ def patch_cli_args() -> None:
 
 
 def patch_init_app_state() -> None:
-    """Wrap init_app_state to inject vllm_hi state after native initialization:
-    - ``app.state.vllm_hi`` (:class:`vllm_hi.common.state.VllmHiState`): centrally
-      stores all vllm_hi state, including instance type / Host address /
-      engine_client / host_client.
-    Also registers the type-A migration endpoint routes.
-    A type-A instance auto-registers with the Host after lifespan startup.
+    """Wrap init_app_state to inject vllm_hi state and skip serving state for B.
+
+    - type A: call the native init_app_state (full serving state), then inject
+      ``app.state.vllm_hi`` and auto-register with the Host.
+    - type B: skip the native init_app_state (the placeholder engine has no
+      model), inject ``app.state.vllm_hi`` (instance_type="B"), set the
+      placeholder engine, and register with the Host.
+
+    The migration endpoint routes are mounted in patch_build_app (unified A/B).
     """
     name = "init_app_state"
     if name in _APPLIED:
@@ -116,22 +120,49 @@ def patch_init_app_state() -> None:
     async def init_app_state_with_vllm_hi(
         engine_client, state, args, supported_tasks=None,
     ):
+        from vllm_hi.common.state import VllmHiState
+        from vllm_hi.instance.host_client import HostClient
+
+        vllm_hi_type = getattr(args, "vllm_hi_type", None)
+        vllm_hi_host = getattr(args, "vllm_hi_host", None)
+        vllm_hi_data_port = getattr(args, "vllm_hi_data_port", 0) or 0
+
+        if vllm_hi_type == "B":
+            # B standby: skip the serving state (placeholder engine has no
+            # model); inject vllm_hi state + set the placeholder engine +
+            # register with the Host.
+            try:
+                state.engine_client = engine_client  # placeholder (serve_http watchdog)
+                hi = getattr(state, "vllm_hi", None)
+                if hi is None:
+                    hi = VllmHiState()
+                    state.vllm_hi = hi
+                hi.instance_type = "B"
+                hi.host_addr = vllm_hi_host
+                hi.data_port = vllm_hi_data_port
+                hi.engine_client = engine_client
+                if vllm_hi_host and hi.host_client is None:
+                    hi.host_client = HostClient(vllm_hi_host)
+                hi.registered = False
+                hi.paused = False
+                if vllm_hi_host:
+                    from vllm_hi.instance.standby import _register_b_to_host
+
+                    asyncio.create_task(_register_b_to_host(state, args, vllm_hi_host))
+                logger.info(
+                    "[vllm_hi] init_app_state skipped serving state for B: host=%s data_port=%s",
+                    vllm_hi_host, vllm_hi_data_port,
+                )
+            except Exception:  # noqa: BLE001
+                logger.exception("[vllm_hi] failed to initialize B standby state")
+            return
+
         await original_init_app_state(
             engine_client, state, args, supported_tasks=supported_tasks
         )
         # Inject vllm_hi state (centralized in the single app.state.vllm_hi
         # dataclass, see common.state)
         try:
-            from vllm_hi.common.state import VllmHiState
-            from vllm_hi.instance.host_client import HostClient
-            from vllm_hi.instance.activate_endpoint import (
-                attach_active_endpoints,
-            )
-
-            vllm_hi_type = getattr(args, "vllm_hi_type", None)
-            vllm_hi_host = getattr(args, "vllm_hi_host", None)
-            vllm_hi_data_port = getattr(args, "vllm_hi_data_port", 0) or 0
-
             hi = getattr(state, "vllm_hi", None)
             if hi is None:
                 hi = VllmHiState()
@@ -144,10 +175,6 @@ def patch_init_app_state() -> None:
                 hi.host_client = HostClient(vllm_hi_host)
             hi.registered = False
             hi.paused = False
-
-            # Register type-A migration endpoint routes on the app (resolved
-            # from state)
-            attach_active_endpoints(state)
 
             # Type-A instance: auto-register with the Host after startup
             if vllm_hi_type == "A" and vllm_hi_host:
@@ -166,22 +193,56 @@ def patch_init_app_state() -> None:
         except Exception:  # noqa: BLE001
             logger.exception("[vllm_hi] failed to inject vllm_hi state; native functionality is unaffected")
 
-    # Keep a reference to the original init_app_state so the type-B standby can
-    # skip vllm_hi injection when it later attaches serving state (the standby
-    # manages state.vllm_hi itself and must not be overwritten by re-injection).
+    # Keep a reference to the original init_app_state so the B instance can fill
+    # serving state with the real engine later (see _init_serving_state), without
+    # re-triggering the vllm_hi injection.
     app_state_module._vllm_hi_original_init_app_state = original_init_app_state
     app_state_module.init_app_state = init_app_state_with_vllm_hi
     _mark(name)
 
 
+def patch_build_async_engine_client() -> None:
+    """For a type-B instance, yield a placeholder engine instead of a real one.
+
+    ``build_async_engine_client`` is an async generator used as
+    ``async with build_async_engine_client(args) as engine:`` by the native
+    ``run_server_worker``. Wrapping it here lets B go through the native pipeline
+    while skipping weight loading / worker spawn; the real engine is created later
+    on the ``instantiate`` migration endpoint.
+    """
+    name = "build_async_engine_client"
+    if name in _APPLIED:
+        return
+
+    from contextlib import asynccontextmanager
+
+    from vllm.entrypoints.launchers.api_server import entry as entry_module
+
+    original = entry_module.build_async_engine_client
+
+    @asynccontextmanager
+    async def build_async_engine_client_with_vllm_hi(*args, **kwargs):
+        from vllm_hi.instance.standby import _StandbyEngineClient
+
+        # The CLI namespace is the first positional argument.
+        namespace = args[0] if args else kwargs.get("args")
+        if getattr(namespace, "vllm_hi_type", None) == "B":
+            yield _StandbyEngineClient()
+            return
+        async with original(*args, **kwargs) as engine:
+            yield engine
+
+    entry_module.build_async_engine_client = build_async_engine_client_with_vllm_hi
+    _mark(name)
+
+
 def patch_run_server() -> None:
-    """Wrap run_server:
-    - If vllm_hi_type == B: skip build_async_engine_client and only start
-      FastAPI (migration endpoints + HostClient), entering standby. The backend
-      is only instantiated on demand after receiving a migration command.
-    - If vllm_hi_type == A: start vLLM normally plus patch extensions, and
-      auto-register with the Host after startup.
-    - If vllm_hi_type is unset: call the native run_server (backward compatible).
+    """Wrap run_server: bind the process to its GPU's NUMA node, then run the
+    native pipeline.
+
+    Both A and B now go through the native ``run_server``; the type-specific
+    differences are pushed down into ``build_async_engine_client`` (placeholder
+    engine for B) and ``init_app_state`` (skip serving state for B).
     """
     name = "run_server"
     if name in _APPLIED:
@@ -193,21 +254,11 @@ def patch_run_server() -> None:
 
     @functools.wraps(original_run_server)
     async def run_server_with_vllm_hi(args, **uvicorn_kwargs):
-        vllm_hi_type = getattr(args, "vllm_hi_type", None)
-        if vllm_hi_type == "B":
-            # Type-B instance: standby startup, does not instantiate the
-            # inference backend
-            from vllm_hi.instance.standby import run_standby_server
+        if getattr(args, "vllm_hi_type", None) in ("A", "B"):
+            from vllm_hi.common.utils import bind_process_to_device_numa
 
-            await run_standby_server(args, **uvicorn_kwargs)
-        else:
-            # Type-A or unset: take the native path (type-A auto-registration
-            # is handled in lifespan)
-            if vllm_hi_type == "A":
-                from vllm_hi.common.utils import bind_process_to_device_numa
-
-                bind_process_to_device_numa()
-            await original_run_server(args, **uvicorn_kwargs)
+            bind_process_to_device_numa()
+        await original_run_server(args, **uvicorn_kwargs)
 
     entry_module.run_server = run_server_with_vllm_hi
     _mark(name)
@@ -215,8 +266,9 @@ def patch_run_server() -> None:
 
 def patch_build_app() -> None:
     """For the vllm API server:
-    1. add a custom route ``GET /vllm_hi/status``;
-    2. attach the ``X-VLLM-HI`` response header to all responses.
+    1. attach both A-side and B-side migration endpoints (unified A/B app);
+    2. add a custom route ``GET /vllm_hi/status``;
+    3. attach the ``X-VLLM-HI`` response header to all responses.
     """
     name = "build_app"
     if name in _APPLIED:
@@ -245,12 +297,32 @@ def patch_build_app() -> None:
         except Exception:  # noqa: BLE001
             pass
 
+        # Attach both A-side and B-side migration endpoints (unified A/B app).
+        # Each endpoint reads state.vllm_hi at request time, so registering them
+        # here — before init_app_state fully populates the state — is safe.
+        try:
+            from vllm_hi.instance.activate_endpoint import attach_active_endpoints
+            from vllm_hi.instance.standby import attach_standby_endpoints
+
+            attach_active_endpoints(app.state)
+            attach_standby_endpoints(app)
+        except Exception:  # noqa: BLE001
+            pass
+
         # ---- 1. Custom status route ----
         @app.get("/vllm_hi/status")
         async def vllm_hi_status():
+            hi = getattr(app.state, "vllm_hi", None)
+            instance_type = getattr(hi, "instance_type", None)
             return {
                 "active": True,
                 "package": "vllm_hi",
+                "role": (
+                    "active" if instance_type == "A"
+                    else "standby" if instance_type == "B"
+                    else "unknown"
+                ),
+                "type": instance_type,
                 "patches": sorted(_APPLIED),
                 "message": "this vllm API server has been customized by vllm_hi",
             }
